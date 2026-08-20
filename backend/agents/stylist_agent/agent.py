@@ -9,3 +9,5 @@ class StylistAgent:
 
     def run(self, payload: dict | None = None) -> dict:
         return {"agent": self.name, "payload": payload or {}}
+
+
