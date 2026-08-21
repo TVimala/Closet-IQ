@@ -1,10 +1,17 @@
-"""Outfit-related routes."""
-
 from fastapi import APIRouter
+from schemas.outfit_schema import OutfitRequest
+from services.outfit_service import process_outfit_request
 
-router = APIRouter(prefix="/outfit", tags=["outfit"])
+
+router = APIRouter(
+    prefix="/outfit",
+    tags=["Outfit"]
+)
 
 
-@router.get("/health")
-def outfit_health() -> dict[str, str]:
-    return {"status": "outfit service ok"}
+@router.post("/generate")
+def generate_outfit(request: OutfitRequest):
+
+    result = process_outfit_request(request.occasion)
+
+    return result

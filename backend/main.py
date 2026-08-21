@@ -1,12 +1,18 @@
-"""Application entry point for the Closet-IQ backend."""
-
 from fastapi import FastAPI
+from api.outfit import router as outfit_router
 
-from backend.config import settings
 
-app = FastAPI(title=settings.app_name, debug=settings.debug)
+app = FastAPI(
+    title="Closet-IQ",
+    description="Agentic AI Personal Wardrobe System"
+)
+
+
+app.include_router(outfit_router)
 
 
 @app.get("/")
-def read_root() -> dict[str, str]:
-    return {"message": "Welcome to Closet-IQ backend"}
+def home():
+    return {
+        "message": "Closet-IQ backend is running"
+    }
