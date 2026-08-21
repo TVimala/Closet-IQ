@@ -82,10 +82,10 @@ class WardrobeItem(Base):
         nullable=True
     )
 
-    subcategory = Column(
-        String(100),
-        nullable=True
-    )
+    # subcategory = Column(
+    #     String(100),
+    #     nullable=True
+    # )
 
     color = Column(
         String(100),
@@ -122,10 +122,10 @@ class WardrobeItem(Base):
         nullable=True
     )
 
-    brand = Column(
-        String(100),
-        nullable=True
-    )
+    # brand = Column(
+    #     String(100),
+    #     nullable=True
+    # )
 
     purchase_price = Column(
         Numeric(10, 2),
