@@ -73,7 +73,7 @@ MOCK_WARDROBE = [
         "color": "black",
         "style": ["formal"],
         "fit": None,
-        "available": True
+        "available": False
     }
 ]
 
