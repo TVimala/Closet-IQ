@@ -1,79 +1,215 @@
-from schemas.outfit_schema import StylistInput
 from agents.stylist_agent.agent import run_stylist_agent
+from schemas.outfit_schema import StylistInput
 
 
 MOCK_WARDROBE = [
+
     {
         "id": "W001",
-        "name": "White Oversized Shirt",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "top",
         "color": "white",
-        "style": ["minimal", "casual"],
+        "pattern": "solid",
         "fit": "oversized",
-        "available": True
+
+        "style": ["minimal", "casual"],
+        "season": ["summer", "spring"],
+        "occasion": ["college", "casual"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 5,
+        "last_worn_at": None,
+
+        "embedding": None
     },
+
     {
         "id": "W002",
-        "name": "Black T-Shirt",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "top",
         "color": "black",
-        "style": ["casual", "comfortable"],
+        "pattern": "solid",
         "fit": "regular",
-        "available": True
+
+        "style": ["casual", "comfortable"],
+        "season": ["all"],
+        "occasion": ["college", "casual", "travel"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 8,
+        "last_worn_at": None,
+
+        "embedding": None
     },
+
     {
         "id": "W003",
-        "name": "Light Blue Shirt",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "top",
-        "color": "blue",
-        "style": ["casual", "classic"],
+        "color": "light_blue",
+        "pattern": "solid",
         "fit": "regular",
-        "available": True
+
+        "style": ["classic", "casual"],
+        "season": ["summer", "spring"],
+        "occasion": ["college", "office", "casual"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 3,
+        "last_worn_at": None,
+
+        "embedding": None
     },
+
     {
         "id": "W004",
-        "name": "Blue Jeans",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "bottom",
         "color": "blue",
-        "style": ["casual"],
+        "pattern": "solid",
         "fit": "regular",
-        "available": True
+
+        "style": ["casual"],
+        "season": ["all"],
+        "occasion": ["college", "casual", "travel"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 10,
+        "last_worn_at": None,
+
+        "embedding": None
     },
+
     {
         "id": "W005",
-        "name": "Black Trousers",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "bottom",
         "color": "black",
-        "style": ["formal", "minimal"],
+        "pattern": "solid",
         "fit": "regular",
-        "available": True
+
+        "style": ["formal", "minimal"],
+        "season": ["all"],
+        "occasion": ["office", "formal"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 2,
+        "last_worn_at": None,
+
+        "embedding": None
     },
+
     {
         "id": "W006",
-        "name": "Beige Trousers",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "bottom",
         "color": "beige",
-        "style": ["minimal", "casual"],
+        "pattern": "solid",
         "fit": "relaxed",
-        "available": True
+
+        "style": ["minimal", "casual"],
+        "season": ["summer", "spring"],
+        "occasion": ["college", "casual", "office"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 4,
+        "last_worn_at": None,
+
+        "embedding": None
     },
+
     {
         "id": "W007",
-        "name": "White Sneakers",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "shoes",
         "color": "white",
-        "style": ["casual", "comfortable"],
+        "pattern": "solid",
         "fit": None,
-        "available": True
+
+        "style": ["casual", "comfortable"],
+        "season": ["all"],
+        "occasion": ["college", "casual", "travel"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 15,
+        "last_worn_at": None,
+
+        "embedding": None
     },
+
     {
         "id": "W008",
-        "name": "Black Formal Shoes",
+        "user_id": "U001",
+        "image_url": None,
+
         "category": "shoes",
         "color": "black",
-        "style": ["formal"],
+        "pattern": "solid",
         "fit": None,
-        "available": True
+
+        "style": ["formal"],
+        "season": ["all"],
+        "occasion": ["office", "formal"],
+
+        "condition": "good",
+        "is_available": True,
+
+        "created_at": None,
+        "updated_at": None,
+
+        "usage_count": 1,
+        "last_worn_at": None,
+
+        "embedding": None
     }
 ]
 
