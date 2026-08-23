@@ -241,30 +241,292 @@ def calculate_occasion_score(outfit, occasion):
 # STEP 3C: SCORE AND SORT ALL OUTFITS
 # ============================================================
 
-def score_outfits_by_occasion(combinations, occasion):
+def score_outfits_by_occasion(
+    combinations,
+    occasion,
+    preferences
+):
 
     scored_outfits = []
 
     for outfit in combinations:
 
-        score = calculate_occasion_score(
+        # --------------------------------------------
+        # STEP 3
+        # Occasion Score /100
+        # --------------------------------------------
+
+        occasion_score = calculate_occasion_score(
             outfit,
             occasion
         )
 
-        # Add score to this outfit
-        outfit["occasion_score"] = score
+        # --------------------------------------------
+        # STEP 4
+        # Preference Score /100
+        # --------------------------------------------
+
+        preference_score = calculate_preference_score(
+            outfit,
+            preferences
+        )
+
+        # --------------------------------------------
+        # COMBINE BOTH SCORES
+        #
+        # Occasion   = 60%
+        # Preference = 40%
+        # --------------------------------------------
+
+        final_score = (
+            occasion_score * 0.60
+            + preference_score * 0.40
+        )
+
+        # Store individual scores
+        outfit["occasion_score"] = round(
+            occasion_score,
+            2
+        )
+
+        outfit["preference_score"] = round(
+            preference_score,
+            2
+        )
+
+        outfit["final_score"] = round(
+            final_score,
+            2
+        )
 
         scored_outfits.append(outfit)
 
-    # Sort highest score first
+    # Sort by FINAL score
     scored_outfits.sort(
-        key=lambda outfit: outfit["occasion_score"],
+        key=lambda outfit: outfit["final_score"],
         reverse=True
     )
 
     return scored_outfits
 
+# ============================================================
+# STEP 4A: CHECK PREFERENCE MATCH
+# ============================================================
+
+def calculate_preference_score(outfit, preferences):
+
+    # --------------------------------------------------------
+    # Maximum score:
+    #
+    # Style   = 40
+    # Color   = 30
+    # Fit     = 20
+    # Comfort = 10
+    # Total   = 100
+    # --------------------------------------------------------
+
+    style_score = calculate_style_preference_score(
+        outfit,
+        preferences
+    )
+
+    color_score = calculate_color_preference_score(
+        outfit,
+        preferences
+    )
+
+    fit_score = calculate_fit_preference_score(
+        outfit,
+        preferences
+    )
+
+    comfort_score = calculate_comfort_score(
+        outfit,
+        preferences
+    )
+
+    final_score = (
+        style_score
+        + color_score
+        + fit_score
+        + comfort_score
+    )
+
+    return round(final_score, 2)
+
+
+# ============================================================
+# STEP 4B: STYLE PREFERENCE SCORE
+# MAXIMUM = 40
+# ============================================================
+
+def calculate_style_preference_score(outfit, preferences):
+
+    preferred_styles = [
+        style.lower()
+        for style in preferences.styles
+    ]
+
+    total_items = 3
+    matched_items = 0
+
+    outfit_items = [
+        outfit["top"],
+        outfit["bottom"],
+        outfit["shoes"]
+    ]
+
+    for item in outfit_items:
+
+        item_styles = [
+            style.lower()
+            for style in item["style"]
+        ]
+
+        if any(
+            style in preferred_styles
+            for style in item_styles
+        ):
+            matched_items += 1
+
+    score = (
+        matched_items / total_items
+    ) * 40
+
+    return score
+
+
+# ============================================================
+# STEP 4C: COLOR PREFERENCE SCORE
+# MAXIMUM = 30
+# ============================================================
+
+def calculate_color_preference_score(outfit, preferences):
+
+    preferred_colors = [
+        color.lower()
+        for color in preferences.colors
+    ]
+
+    outfit_items = [
+        outfit["top"],
+        outfit["bottom"],
+        outfit["shoes"]
+    ]
+
+    matched_items = 0
+    total_items = 3
+
+    for item in outfit_items:
+
+        item_color = item["color"]
+
+        if item_color:
+
+            item_color = item_color.lower()
+
+            if item_color in preferred_colors:
+                matched_items += 1
+
+    score = (
+        matched_items / total_items
+    ) * 30
+
+    return score
+
+
+# ============================================================
+# STEP 4D: FIT PREFERENCE SCORE
+# MAXIMUM = 20
+# ============================================================
+
+def calculate_fit_preference_score(outfit, preferences):
+
+    preferred_fits = [
+        fit.lower()
+        for fit in preferences.fits
+    ]
+
+    outfit_items = [
+        outfit["top"],
+        outfit["bottom"]
+    ]
+
+    matched_items = 0
+    total_items = 2
+
+    for item in outfit_items:
+
+        item_fit = item.get("fit")
+
+        if item_fit:
+
+            if item_fit.lower() in preferred_fits:
+                matched_items += 1
+
+    score = (
+        matched_items / total_items
+    ) * 20
+
+    return score
+
+
+# ============================================================
+# STEP 4E: COMFORT SCORE
+# MAXIMUM = 10
+# ============================================================
+
+def calculate_comfort_score(outfit, preferences):
+
+    comfort_level = preferences.comfort_level
+
+    # User's comfort level must be between 1 and 5
+    comfort_level = max(
+        1,
+        min(comfort_level, 5)
+    )
+
+    # If comfort is very important
+    if comfort_level >= 4:
+
+        comfort_styles = [
+            "comfortable",
+            "casual"
+        ]
+
+        comfort_fits = [
+            "relaxed",
+            "oversized"
+        ]
+
+        outfit_items = [
+            outfit["top"],
+            outfit["bottom"]
+        ]
+
+        matched_items = 0
+
+        for item in outfit_items:
+
+            style_match = any(
+                style.lower() in comfort_styles
+                for style in item["style"]
+            )
+
+            fit_value = item.get("fit")
+
+            fit_match = (
+                fit_value
+                and fit_value.lower() in comfort_fits
+            )
+
+            if style_match or fit_match:
+                matched_items += 1
+
+        return (
+            matched_items / 2
+        ) * 10
+    return 5
 
 # ============================================================
 # MAIN STYLIST AGENT
@@ -298,8 +560,9 @@ def run_stylist_agent(data: StylistInput):
     # --------------------------------------------------------
 
     scored_outfits = score_outfits_by_occasion(
-        combinations,
-        data.occasion
+    combinations,
+    data.occasion,
+    data.preferences
     )
 
     # --------------------------------------------------------
@@ -333,9 +596,17 @@ def run_stylist_agent(data: StylistInput):
         )
 
         print(
-            f"Occasion Score: "
-            f"{outfit['occasion_score']}"
+        f"Occasion Score: "
+        f"{outfit['occasion_score']}/100"
         )
+
+        print(
+        f"Preference Score: "
+        f"{outfit['preference_score']}/100")
+
+        print(
+        f"Final Score: "
+        f"{outfit['final_score']}/100")
 
     # --------------------------------------------------------
     # Return result to API

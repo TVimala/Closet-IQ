@@ -1,5 +1,8 @@
 from agents.stylist_agent.agent import run_stylist_agent
-from schemas.outfit_schema import StylistInput
+from schemas.outfit_schema import (
+    StylistInput,
+    UserPreferences
+)
 
 
 MOCK_WARDROBE = [
@@ -213,12 +216,41 @@ MOCK_WARDROBE = [
     }
 ]
 
+# ============================================================
+# MOCK USER PREFERENCES
+# ============================================================
+
+MOCK_USER_PREFERENCES = {
+    "styles": [
+        "minimal",
+        "casual",
+        "comfortable"
+    ],
+
+    "colors": [
+        "white",
+        "black",
+        "beige"
+    ],
+
+    "fits": [
+        "relaxed",
+        "oversized"
+    ],
+
+    "comfort_level": 5
+}
 
 def process_outfit_request(occasion: str):
 
+    preferences = UserPreferences(
+        **MOCK_USER_PREFERENCES
+    )
+
     agent_input = StylistInput(
         occasion=occasion,
-        wardrobe=MOCK_WARDROBE
+        wardrobe=MOCK_WARDROBE,
+        preferences=preferences
     )
 
     result = run_stylist_agent(agent_input)

@@ -3,9 +3,28 @@ from typing import List, Optional
 from datetime import datetime
 
 
+# ============================================================
+# USER PREFERENCES
+# ============================================================
+
+class UserPreferences(BaseModel):
+    styles: List[str] = []
+    colors: List[str] = []
+    fits: List[str] = []
+    comfort_level: int = 3
+
+
+# ============================================================
+# OUTFIT REQUEST
+# ============================================================
+
 class OutfitRequest(BaseModel):
     occasion: str
 
+
+# ============================================================
+# WARDROBE ITEM
+# ============================================================
 
 class WardrobeItem(BaseModel):
     id: str
@@ -34,6 +53,11 @@ class WardrobeItem(BaseModel):
     embedding: Optional[List[float]] = None
 
 
+# ============================================================
+# DATA SENT TO STYLIST AGENT
+# ============================================================
+
 class StylistInput(BaseModel):
     occasion: str
     wardrobe: List[WardrobeItem]
+    preferences: UserPreferences
