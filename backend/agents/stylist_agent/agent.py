@@ -108,7 +108,9 @@ def generate_outfit_combinations(wardrobe):
                         "name": top.color + " " + top.category,
                         "category": top.category,
                         "color": top.color,
+                        "fit": top.fit,
                         "style": top.style,
+                        "season": top.season,
                         "occasion": top.occasion
                     },
 
@@ -117,7 +119,9 @@ def generate_outfit_combinations(wardrobe):
                         "name": bottom.color + " " + bottom.category,
                         "category": bottom.category,
                         "color": bottom.color,
+                        "fit": bottom.fit,
                         "style": bottom.style,
+                        "season": bottom.season,
                         "occasion": bottom.occasion
                     },
 
@@ -126,7 +130,9 @@ def generate_outfit_combinations(wardrobe):
                         "name": shoe.color + " " + shoe.category,
                         "category": shoe.category,
                         "color": shoe.color,
+                        "fit": shoe.fit,
                         "style": shoe.style,
+                        "season": shoe.season,
                         "occasion": shoe.occasion
                     }
                 }
@@ -244,46 +250,57 @@ def calculate_occasion_score(outfit, occasion):
 def score_outfits_by_occasion(
     combinations,
     occasion,
-    preferences
+    preferences,
+    weather
 ):
 
     scored_outfits = []
 
     for outfit in combinations:
 
-        # --------------------------------------------
-        # STEP 3
-        # Occasion Score /100
-        # --------------------------------------------
+        # =====================================
+        # STEP 3: OCCASION SCORE
+        # =====================================
 
         occasion_score = calculate_occasion_score(
             outfit,
             occasion
         )
 
-        # --------------------------------------------
-        # STEP 4
-        # Preference Score /100
-        # --------------------------------------------
+        # =====================================
+        # STEP 4: PREFERENCE SCORE
+        # =====================================
 
         preference_score = calculate_preference_score(
             outfit,
             preferences
         )
 
-        # --------------------------------------------
-        # COMBINE BOTH SCORES
-        #
-        # Occasion   = 60%
-        # Preference = 40%
-        # --------------------------------------------
+        # =====================================
+        # STEP 5: WEATHER SCORE
+        # =====================================
 
-        final_score = (
-            occasion_score * 0.60
-            + preference_score * 0.40
+        weather_score = calculate_weather_score(
+            outfit,
+            weather
         )
 
-        # Store individual scores
+        # =====================================
+        # FINAL WEIGHTED SCORE
+        #
+        # Occasion   = 50%
+        # Preference = 30%
+        # Weather    = 20%
+        # =====================================
+
+        final_score = (
+            occasion_score * 0.50
+            + preference_score * 0.30
+            + weather_score * 0.20
+        )
+
+        # Store all scores
+
         outfit["occasion_score"] = round(
             occasion_score,
             2
@@ -294,6 +311,11 @@ def score_outfits_by_occasion(
             2
         )
 
+        outfit["weather_score"] = round(
+            weather_score,
+            2
+        )
+
         outfit["final_score"] = round(
             final_score,
             2
@@ -301,7 +323,8 @@ def score_outfits_by_occasion(
 
         scored_outfits.append(outfit)
 
-    # Sort by FINAL score
+    # Sort highest score first
+
     scored_outfits.sort(
         key=lambda outfit: outfit["final_score"],
         reverse=True
@@ -529,10 +552,53 @@ def calculate_comfort_score(outfit, preferences):
     return 5
 
 # ============================================================
+# STEP 5: WEATHER SCORE
+# ============================================================
+
+def calculate_weather_score(
+    outfit,
+    weather
+):
+
+    recommended_season = weather[
+        "recommended_season"
+    ].lower()
+
+    outfit_items = [
+        outfit["top"],
+        outfit["bottom"],
+        outfit["shoes"]
+    ]
+
+    matched_items = 0
+    total_items = 3
+
+    for item in outfit_items:
+
+        item_seasons = [
+            season.lower()
+            for season in item.get("season", [])
+        ]
+
+        # Item suitable for all seasons
+        if "all" in item_seasons:
+            matched_items += 1
+
+        # Item matches current weather season
+        elif recommended_season in item_seasons:
+            matched_items += 1
+
+    score = (
+        matched_items / total_items
+    ) * 100
+
+    return round(score, 2)
+
+# ============================================================
 # MAIN STYLIST AGENT
 # ============================================================
 
-def run_stylist_agent(data: StylistInput):
+def run_stylist_agent(data, weather):
 
     print("\n===================================")
     print("STYLIST AGENT STARTED")
@@ -540,11 +606,7 @@ def run_stylist_agent(data: StylistInput):
 
     print(f"\nRequested Occasion: {data.occasion}")
 
-    # --------------------------------------------------------
-    # STEP 2
-    # Generate all valid outfit combinations
-    # --------------------------------------------------------
-
+    # STEP 2: Generate outfit combinations
     combinations = generate_outfit_combinations(
         data.wardrobe
     )
@@ -554,21 +616,15 @@ def run_stylist_agent(data: StylistInput):
         f"{len(combinations)}"
     )
 
-    # --------------------------------------------------------
-    # STEP 3
-    # Score outfits based on occasion
-    # --------------------------------------------------------
-
+    # STEP 3 + STEP 4 + STEP 5
     scored_outfits = score_outfits_by_occasion(
-    combinations,
-    data.occasion,
-    data.preferences
+        combinations,
+        data.occasion,
+        data.preferences,
+        weather
     )
 
-    # --------------------------------------------------------
-    # Display Top 3 in terminal
-    # --------------------------------------------------------
-
+    # DISPLAY TOP 3
     print("\n===================================")
     print("TOP 3 OUTFITS")
     print("===================================")
@@ -580,41 +636,34 @@ def run_stylist_agent(data: StylistInput):
 
         print(f"\nRank #{index}")
 
+        print(f"Top: {outfit['top']['name']}")
+        print(f"Bottom: {outfit['bottom']['name']}")
+        print(f"Shoes: {outfit['shoes']['name']}")
+
         print(
-            f"Top: "
-            f"{outfit['top']['name']}"
+            f"Occasion Score: "
+            f"{outfit['occasion_score']}/100"
         )
 
         print(
-            f"Bottom: "
-            f"{outfit['bottom']['name']}"
+            f"Preference Score: "
+            f"{outfit['preference_score']}/100"
         )
 
         print(
-            f"Shoes: "
-            f"{outfit['shoes']['name']}"
+            f"Weather Score: "
+            f"{outfit['weather_score']}/100"
         )
 
         print(
-        f"Occasion Score: "
-        f"{outfit['occasion_score']}/100"
+            f"Final Score: "
+            f"{outfit['final_score']}/100"
         )
-
-        print(
-        f"Preference Score: "
-        f"{outfit['preference_score']}/100")
-
-        print(
-        f"Final Score: "
-        f"{outfit['final_score']}/100")
-
-    # --------------------------------------------------------
-    # Return result to API
-    # --------------------------------------------------------
 
     return {
         "status": "success",
         "requested_occasion": data.occasion,
+        "weather": weather,
         "total_combinations": len(scored_outfits),
-        "outfits": scored_outfits
+        "outfits": scored_outfits[:3]
     }

@@ -1,8 +1,123 @@
-"""Weather service placeholder."""
+import requests
 
 
-class WeatherService:
-    """Provides weather data for outfit planning."""
+# ============================================================
+# GET REAL-TIME WEATHER
+# ============================================================
 
-    def get_forecast(self, city: str) -> dict:
-        return {"city": city, "temperature": 22, "condition": "sunny"}
+def get_current_weather(latitude: float, longitude: float):
+
+    url = "https://api.open-meteo.com/v1/forecast"
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "current": "temperature_2m,weather_code"
+    }
+
+    response = requests.get(
+        url,
+        params=params,
+        timeout=10
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    current = data["current"]
+
+    return {
+        "temperature": current["temperature_2m"],
+        "weather_code": current["weather_code"]
+    }
+
+
+# ============================================================
+# CONVERT WEATHER CODE TO CONDITION
+# ============================================================
+
+def get_weather_condition(weather_code: int):
+
+    if weather_code == 0:
+        return "clear"
+
+    elif weather_code in [1, 2, 3]:
+        return "cloudy"
+
+    elif weather_code in [45, 48]:
+        return "foggy"
+
+    elif weather_code in [
+        51, 53, 55,
+        56, 57,
+        61, 63, 65,
+        66, 67,
+        80, 81, 82
+    ]:
+        return "rainy"
+
+    elif weather_code in [
+        71, 73, 75,
+        77, 85, 86
+    ]:
+        return "snowy"
+
+    elif weather_code in [
+        95, 96, 99
+    ]:
+        return "thunderstorm"
+
+    return "unknown"
+
+
+# ============================================================
+# CONVERT TEMPERATURE TO CLOTHING SEASON
+# ============================================================
+
+def get_recommended_season(temperature: float):
+
+    if temperature > 30:
+        return "summer"
+
+    elif temperature > 20:
+        return "spring"
+
+    elif temperature > 10:
+        return "autumn"
+
+    return "winter"
+
+
+# ============================================================
+# MAIN WEATHER FUNCTION
+# ============================================================
+
+def get_weather_context(
+    latitude: float,
+    longitude: float
+):
+
+    weather_data = get_current_weather(
+        latitude,
+        longitude
+    )
+
+    temperature = weather_data["temperature"]
+
+    weather_code = weather_data["weather_code"]
+
+    condition = get_weather_condition(
+        weather_code
+    )
+
+    recommended_season = get_recommended_season(
+        temperature
+    )
+
+    return {
+        "temperature": temperature,
+        "weather_code": weather_code,
+        "condition": condition,
+        "recommended_season": recommended_season
+    }

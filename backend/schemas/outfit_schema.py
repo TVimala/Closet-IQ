@@ -20,6 +20,8 @@ class UserPreferences(BaseModel):
 
 class OutfitRequest(BaseModel):
     occasion: str
+    latitude: float
+    longitude: float
 
 
 # ============================================================
