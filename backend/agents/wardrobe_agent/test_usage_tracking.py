@@ -1,4 +1,4 @@
-from agents.wardrobe_agent.wardrobe_service import mark_item_as_worn
+from agents.wardrobe_agent.agent import mark_item_as_worn
 
 
 result = mark_item_as_worn(

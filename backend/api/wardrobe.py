@@ -10,7 +10,7 @@ from database.models import WardrobeItem
 
 from vision.clothing_analyzer import analyze_clothing
 
-from agents.wardrobe_agent.wardrobe_service import (
+from agents.wardrobe_agent.agent import (
     find_similar_items,
     get_wardrobe,
     search_wardrobe,

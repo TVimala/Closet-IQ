@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from database.connection import SessionLocal
 
-from agents.profile_agent.profile_service import (
+from agents.profile_agent.agent import (
     create_user_profile,
     create_user_preferences,
     get_user_profile,
