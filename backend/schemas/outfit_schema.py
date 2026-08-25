@@ -1,17 +1,78 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 
+# ============================================================
+# LONG-TERM USER PREFERENCES
+# ============================================================
+
+class LongTermPreferences(BaseModel):
+
+    styles: List[str] = Field(
+        default_factory=list
+    )
+
+    colors: List[str] = Field(
+        default_factory=list
+    )
+
+    fits: List[str] = Field(
+        default_factory=list
+    )
+
+    comfort_level: int = Field(
+        default=3,
+        ge=1,
+        le=5
+    )
+
+
+# ============================================================
+# SHORT-TERM / TODAY'S PREFERENCES
+# ============================================================
+
+class ShortTermPreferences(BaseModel):
+
+    styles: List[str] = Field(
+        default_factory=list
+    )
+
+    colors: List[str] = Field(
+        default_factory=list
+    )
+
+    fits: List[str] = Field(
+        default_factory=list
+    )
+
+    comfort_level: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=5
+    )
+
+    avoid_styles: List[str] = Field(
+        default_factory=list
+    )
+
+    avoid_colors: List[str] = Field(
+        default_factory=list
+    )
+
+    occasion_note: Optional[str] = None
 
 # ============================================================
 # USER PREFERENCES
 # ============================================================
 
 class UserPreferences(BaseModel):
-    styles: List[str] = []
-    colors: List[str] = []
-    fits: List[str] = []
-    comfort_level: int = 3
+    long_term: LongTermPreferences = Field(
+        default_factory=LongTermPreferences
+    )
+
+    short_term: ShortTermPreferences = Field(
+        default_factory=ShortTermPreferences
+    )
 
 
 # ============================================================
