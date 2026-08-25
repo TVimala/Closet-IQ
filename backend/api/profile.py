@@ -13,6 +13,11 @@ from agents.profile_agent.agent import (
     get_preference_context
 )
 
+from schemas.profile import (
+    UserProfileCreate,
+    UserPreferenceCreate,
+    UserPreferenceUpdate
+)
 
 router = APIRouter(
     prefix="/api/profile",
@@ -21,18 +26,16 @@ router = APIRouter(
 
 @router.post("/")
 def create_profile(
-    user_id: str,
-    gender: str,
-    birth_year: int
+    profile_data: UserProfileCreate
 ):
     db: Session = SessionLocal()
 
     try:
         profile = create_user_profile(
             db,
-            user_id,
-            gender,
-            birth_year
+            profile_data.user_id,
+            profile_data.gender,
+            profile_data.birth_year
         )
 
         return {
@@ -60,24 +63,19 @@ def create_profile(
 
 @router.post("/preferences")
 def create_preferences(
-    user_id: str,
-    styles: list[str],
-    colors: list[str],
-    fits: list[str],
-    occasions: list[str],
-    comfort_weight: int
+    preference_data: UserPreferenceCreate
 ):
     db: Session = SessionLocal()
 
     try:
         preferences = create_user_preferences(
             db,
-            user_id,
-            styles,
-            colors,
-            fits,
-            occasions,
-            comfort_weight
+            preference_data.user_id,
+            preference_data.styles,
+            preference_data.colors,
+            preference_data.fits,
+            preference_data.occasions,
+            preference_data.comfort_weight
         )
 
         return {
@@ -141,11 +139,7 @@ def get_complete_profile(user_id: str):
 @router.put("/preferences/{user_id}")
 def update_preferences(
     user_id: str,
-    styles: list[str] = None,
-    colors: list[str] = None,
-    fits: list[str] = None,
-    occasions: list[str] = None,
-    comfort_weight: int = None
+    preference_data: UserPreferenceUpdate
 ):
     db: Session = SessionLocal()
 
@@ -153,11 +147,11 @@ def update_preferences(
         preferences = update_user_preferences(
             db,
             user_id,
-            styles=styles,
-            colors=colors,
-            fits=fits,
-            occasions=occasions,
-            comfort_weight=comfort_weight
+            styles=preference_data.styles,
+            colors=preference_data.colors,
+            fits=preference_data.fits,
+            occasions=preference_data.occasions,
+            comfort_weight=preference_data.comfort_weight
         )
 
         if not preferences:
