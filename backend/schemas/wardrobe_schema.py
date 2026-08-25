@@ -1,18 +1,15 @@
-"""Wardrobe request/response schemas."""
-
 from pydantic import BaseModel
+from typing import Optional
 
 
-class WardrobeItemCreate(BaseModel):
-    name: str
-    category: str
-    color: str | None = None
-    tags: list[str] | None = None
+class WardrobeItemUpdate(BaseModel):
 
-
-class WardrobeItemRead(BaseModel):
-    id: str
-    name: str
-    category: str
-    color: str | None = None
-    tags: list[str] = []
+    category: Optional[str] = None
+    color: Optional[str] = None
+    pattern: Optional[str] = None
+    fit: Optional[str] = None
+    style: Optional[str] = None
+    occasion: Optional[str] = None
+    season: Optional[str] = None
+    condition: Optional[str] = None
+    is_available: Optional[bool] = None

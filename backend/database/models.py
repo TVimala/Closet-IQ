@@ -7,13 +7,18 @@ from sqlalchemy import (
     DateTime,
     Numeric,
     Date,
-    ForeignKey
+    ForeignKey,
+    TIMESTAMP
 )
 from sqlalchemy.sql import func
 
 from .connection import Base
 
 from pgvector.sqlalchemy import Vector
+
+from sqlalchemy.dialects.postgresql import ARRAY
+
+from sqlalchemy.orm import relationship
 
 
 class User(Base):
@@ -82,10 +87,10 @@ class WardrobeItem(Base):
         nullable=True
     )
 
-    subcategory = Column(
-        String(100),
-        nullable=True
-    )
+    # subcategory = Column(
+    #     String(100),
+    #     nullable=True
+    # )
 
     color = Column(
         String(100),
@@ -97,10 +102,10 @@ class WardrobeItem(Base):
         nullable=True
     )
 
-    material = Column(
-        String(100),
-        nullable=True
-    )
+    # material = Column(
+    #     String(100),
+    #     nullable=True
+    # )
 
     fit = Column(
         String(100),
@@ -122,20 +127,20 @@ class WardrobeItem(Base):
         nullable=True
     )
 
-    brand = Column(
-        String(100),
-        nullable=True
-    )
+    # brand = Column(
+    #     String(100),
+    #     nullable=True
+    # )
 
-    purchase_price = Column(
-        Numeric(10, 2),
-        nullable=True
-    )
+    # purchase_price = Column(
+    #     Numeric(10, 2),
+    #     nullable=True
+    # )
 
-    purchase_date = Column(
-        Date,
-        nullable=True
-    )
+    # purchase_date = Column(
+    #     Date,
+    #     nullable=True
+    # )
 
     condition = Column(
         String(50),
@@ -165,6 +170,93 @@ class WardrobeItem(Base):
 
     updated_at = Column(
         DateTime,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False
+    )
+
+    gender = Column(String(30))
+    birth_year = Column(Integer)
+    generation = Column(String(50))
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False
+    )
+
+    styles = Column(ARRAY(String(100)))
+    colors = Column(ARRAY(String(100)))
+    fits = Column(ARRAY(String(100)))
+    occasions = Column(ARRAY(String(100)))
+
+    comfort_weight = Column(Integer)
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+class UserCurrentPreference(Base):
+    __tablename__ = "user_current_preferences"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True
+    )
+
+    styles = Column(ARRAY(String(100)))
+    colors = Column(ARRAY(String(100)))
+    fits = Column(ARRAY(String(100)))
+    occasions = Column(ARRAY(String(100)))
+
+    comfort_weight = Column(Integer)
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        TIMESTAMP,
         server_default=func.now(),
         onupdate=func.now()
     )

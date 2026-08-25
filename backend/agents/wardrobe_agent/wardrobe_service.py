@@ -176,7 +176,7 @@ def update_wardrobe_item(
             "style": item.style,
             "occasion": item.occasion,
             "season": item.season,
-            "brand": item.brand,
+            # "brand": item.brand,
             "condition": item.condition,
             "is_available": item.is_available
         }
