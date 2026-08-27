@@ -1400,6 +1400,7 @@ def process_outfit_request(
     # CREATE STYLIST INPUT
     # =====================================
 
+
     agent_input = StylistInput(
         occasion=occasion,
         wardrobe=MOCK_WARDROBE,

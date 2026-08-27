@@ -23,7 +23,8 @@ from .Scoring.outfit_scorer import (
 
 def run_stylist_agent(
     data,
-    weather
+    weather,
+    learned_preferences=None
 ):
 
     print(
@@ -113,7 +114,9 @@ def run_stylist_agent(
 
         data.preferences,
 
-        weather
+        weather,
+
+        learned_preferences
     )
 
 
@@ -216,6 +219,10 @@ def run_stylist_agent(
             f"{outfit['weather_score']}/100"
         )
 
+        print(
+            f"Learned Preference Score: "
+            f"{outfit.get('learned_preference_score', 50)}/100"
+        )
 
         print(
             f"Final Score: "
@@ -228,17 +235,17 @@ def run_stylist_agent(
         # RECOMMENDATION REASONS
         # ====================================================
 
-        if outfit.get("reasons"):
+        # if outfit.get("reasons"):
 
-            print(
-                "Reasons:"
-            )
+        #     print(
+        #         "Reasons:"
+        #     )
 
-            for reason in outfit["reasons"]:
+        #     for reason in outfit["reasons"]:
 
-                print(
-                    f" - {reason}"
-                )
+        #         print(
+        #             f" - {reason}"
+        #         )
 
 
     # ========================================================

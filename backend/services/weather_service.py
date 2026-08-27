@@ -2,42 +2,12 @@ import requests
 
 
 # ============================================================
-# GET REAL-TIME WEATHER
+# WEATHER CODE → CONDITION
 # ============================================================
 
-def get_current_weather(latitude: float, longitude: float):
-
-    url = "https://api.open-meteo.com/v1/forecast"
-
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "current": "temperature_2m,weather_code"
-    }
-
-    response = requests.get(
-        url,
-        params=params,
-        timeout=10
-    )
-
-    response.raise_for_status()
-
-    data = response.json()
-
-    current = data["current"]
-
-    return {
-        "temperature": current["temperature_2m"],
-        "weather_code": current["weather_code"]
-    }
-
-
-# ============================================================
-# CONVERT WEATHER CODE TO CONDITION
-# ============================================================
-
-def get_weather_condition(weather_code: int):
+def get_weather_condition(
+    weather_code: int
+):
 
     if weather_code == 0:
         return "clear"
@@ -72,10 +42,12 @@ def get_weather_condition(weather_code: int):
 
 
 # ============================================================
-# CONVERT TEMPERATURE TO CLOTHING SEASON
+# TEMPERATURE → CLOTHING SEASON
 # ============================================================
 
-def get_recommended_season(temperature: float):
+def get_recommended_season(
+    temperature: float
+):
 
     if temperature > 30:
         return "summer"
@@ -90,7 +62,8 @@ def get_recommended_season(temperature: float):
 
 
 # ============================================================
-# MAIN WEATHER FUNCTION
+# GET CURRENT WEATHER
+# FOR SINGLE OUTFIT GENERATION
 # ============================================================
 
 def get_weather_context(
@@ -98,26 +71,188 @@ def get_weather_context(
     longitude: float
 ):
 
-    weather_data = get_current_weather(
-        latitude,
-        longitude
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
     )
 
-    temperature = weather_data["temperature"]
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
 
-    weather_code = weather_data["weather_code"]
+        "current":
+            "temperature_2m,weather_code",
+
+        "timezone": "auto"
+    }
+
+    response = requests.get(
+        url,
+        params=params,
+        timeout=10
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    current = data["current"]
+
+    temperature = current[
+        "temperature_2m"
+    ]
+
+    weather_code = current[
+        "weather_code"
+    ]
 
     condition = get_weather_condition(
         weather_code
     )
 
-    recommended_season = get_recommended_season(
-        temperature
+    recommended_season = (
+        get_recommended_season(
+            temperature
+        )
     )
 
     return {
-        "temperature": temperature,
-        "weather_code": weather_code,
-        "condition": condition,
-        "recommended_season": recommended_season
+
+        "temperature":
+            temperature,
+
+        "weather_code":
+            weather_code,
+
+        "condition":
+            condition,
+
+        "recommended_season":
+            recommended_season
     }
+
+
+# ============================================================
+# GET 7-DAY WEATHER FORECAST
+# FOR WEEKLY PLANNER
+# ============================================================
+
+def get_weekly_weather(
+    latitude: float,
+    longitude: float
+):
+
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
+    )
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+
+        "daily": (
+            "temperature_2m_max,"
+            "temperature_2m_min,"
+            "weather_code"
+        ),
+
+        "forecast_days": 7,
+
+        "timezone": "auto"
+    }
+
+    response = requests.get(
+        url,
+        params=params,
+        timeout=10
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    daily = data["daily"]
+
+    weather = []
+
+    total_days = min(
+        7,
+        len(daily["time"])
+    )
+
+
+    # ========================================================
+    # PROCESS EACH FORECAST DAY
+    # ========================================================
+
+    for i in range(total_days):
+
+        temperature_max = daily[
+            "temperature_2m_max"
+        ][i]
+
+        temperature_min = daily[
+            "temperature_2m_min"
+        ][i]
+
+        weather_code = daily[
+            "weather_code"
+        ][i]
+
+
+        # ====================================================
+        # CONDITION
+        # ====================================================
+
+        condition = get_weather_condition(
+            weather_code
+        )
+
+
+        # ====================================================
+        # AVERAGE TEMPERATURE
+        # ====================================================
+
+        average_temperature = (
+            temperature_max +
+            temperature_min
+        ) / 2
+
+
+        # ====================================================
+        # RECOMMENDED CLOTHING SEASON
+        # ====================================================
+
+        recommended_season = (
+            get_recommended_season(
+                average_temperature
+            )
+        )
+
+
+        # ====================================================
+        # STORE DAY WEATHER
+        # ====================================================
+
+        weather.append({
+
+            "date":
+                daily["time"][i],
+
+            "temperature_max":
+                temperature_max,
+
+            "temperature_min":
+                temperature_min,
+
+            "weather_code":
+                weather_code,
+
+            "condition":
+                condition,
+
+            "recommended_season":
+                recommended_season
+        })
+
+
+    return weather

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
+
 
 # ============================================================
 # LONG-TERM USER PREFERENCES
@@ -61,11 +62,13 @@ class ShortTermPreferences(BaseModel):
 
     occasion_note: Optional[str] = None
 
+
 # ============================================================
 # USER PREFERENCES
 # ============================================================
 
 class UserPreferences(BaseModel):
+
     long_term: LongTermPreferences = Field(
         default_factory=LongTermPreferences
     )
@@ -76,12 +79,15 @@ class UserPreferences(BaseModel):
 
 
 # ============================================================
-# OUTFIT REQUEST
+# SINGLE OUTFIT REQUEST
 # ============================================================
 
 class OutfitRequest(BaseModel):
+
     occasion: str
+
     latitude: float
+
     longitude: float
 
 
@@ -90,6 +96,7 @@ class OutfitRequest(BaseModel):
 # ============================================================
 
 class WardrobeItem(BaseModel):
+
     id: str
     user_id: str
 
@@ -100,17 +107,27 @@ class WardrobeItem(BaseModel):
     pattern: Optional[str] = None
     fit: Optional[str] = None
 
-    style: List[str] = []
-    season: List[str] = []
-    occasion: List[str] = []
+    style: List[str] = Field(
+        default_factory=list
+    )
+
+    season: List[str] = Field(
+        default_factory=list
+    )
+
+    occasion: List[str] = Field(
+        default_factory=list
+    )
 
     condition: str
+
     is_available: bool = True
 
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
     usage_count: int = 0
+
     last_worn_at: Optional[datetime] = None
 
     embedding: Optional[List[float]] = None
@@ -121,6 +138,38 @@ class WardrobeItem(BaseModel):
 # ============================================================
 
 class StylistInput(BaseModel):
+
     occasion: str
+
     wardrobe: List[WardrobeItem]
+
     preferences: UserPreferences
+
+
+# ============================================================
+# WEEKLY PLANNER — ONE DAY
+# ============================================================
+
+class WeeklyDayPlan(BaseModel):
+
+    date: date
+
+    occasion: str
+
+
+# ============================================================
+# WEEKLY OUTFIT REQUEST
+# ============================================================
+
+class WeeklyOutfitRequest(BaseModel):
+
+    start_date: date
+
+    days: List[WeeklyDayPlan] = Field(
+        min_length=1,
+        max_length=7
+    )
+
+    latitude: float
+
+    longitude: float
