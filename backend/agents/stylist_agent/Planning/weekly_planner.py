@@ -295,38 +295,90 @@ def generate_weekly_plan(
         # ====================================================
         # STEP 3C
         # RUN EXISTING STYLIST AGENT
+        #
+        # IMPORTANT:
+        #
+        # weekly_mode=True tells the stylist to return
+        # the COMPLETE scored outfit pool instead of
+        # reducing it to Top 3.
         # ====================================================
 
         stylist_result = run_stylist_agent(
 
             stylist_input,
 
-            day_weather
+            day_weather,
+
+            weekly_mode=True
         )
 
 
         # ====================================================
         # STEP 3D
-        # GET CANDIDATE OUTFITS
+        # GET FULL SCORED OUTFIT POOL
+        #
+        # The normal stylist returns Top 3 in "outfits".
+        #
+        # Weekly mode returns ALL scored candidates in
+        # "scored_outfits".
         # ====================================================
 
         candidate_outfits = (
             stylist_result.get(
-                "outfits",
+                "scored_outfits",
                 []
             )
         )
 
 
         print(
-            f"Candidate Outfits: "
+            f"Full Scored Outfit Pool: "
+            f"{len(candidate_outfits)}"
+        )
+
+
+        # ====================================================
+        # SAFETY FALLBACK
+        #
+        # This should normally not be needed because
+        # weekly_mode=True returns "scored_outfits".
+        #
+        # It protects the planner if an older stylist
+        # response is ever passed here.
+        # ====================================================
+
+        if not candidate_outfits:
+
+            candidate_outfits = (
+                stylist_result.get(
+                    "outfits",
+                    []
+                )
+            )
+
+
+        print(
+            f"Candidate Outfits Available "
+            f"for Weekly Selection: "
             f"{len(candidate_outfits)}"
         )
 
 
         # ====================================================
         # STEP 3E
-        # SELECT NON-REPEATED OUTFIT
+        # SELECT BEST NON-REPEATED OUTFIT
+        #
+        # candidate_outfits is already sorted by final_score
+        # because score_outfits() sorts the complete pool.
+        #
+        # Therefore:
+        #
+        # Day 1 -> highest scoring outfit
+        # Day 2 -> highest scoring unused outfit
+        # Day 3 -> highest scoring unused outfit
+        # ...
+        #
+        # Same complete outfit will never be selected twice.
         # ====================================================
 
         selected_outfit = (
@@ -407,8 +459,8 @@ def generate_weekly_plan(
 
 
         print(
-            "\nSelected Outfit:"
-        )
+    "\nSelected Outfit:"
+)
 
         print(
             f"Type: "
@@ -419,6 +471,22 @@ def generate_weekly_plan(
             f"Final Score: "
             f"{selected_outfit.get('final_score')}"
         )
+
+        # print(
+        #     f"Color Compatibility Score: "
+        #     f"{selected_outfit.get('color_compatibility_score', 0)}"
+        # )
+
+        print("Items:")
+
+        for item in selected_outfit.get("items", []):
+
+            print(
+                f" - "
+                f"{item.get('color', '')} "
+                f"{item.get('category', '')} "
+                f"({item.get('id', '')})"
+            )
 
 
     # ========================================================

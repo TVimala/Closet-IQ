@@ -24,12 +24,35 @@ from .Scoring.color_compatibility import (
 def run_stylist_agent(
     data,
     weather,
-    learned_preferences=None
+    learned_preferences=None,
+    weekly_mode=False
 ):
     print("\n===================================")
     print("STYLIST AGENT STARTED")
     print("===================================")
-    print(f"\nRequested Occasion: {data.occasion}")
+
+    print(
+        f"\nRequested Occasion: "
+        f"{data.occasion}"
+    )
+
+    # ========================================================
+    # MODE
+    # ========================================================
+
+    if weekly_mode:
+
+        print(
+            "Mode: WEEKLY PLANNING "
+            "(FULL SCORED OUTFIT POOL)"
+        )
+
+    else:
+
+        print(
+            "Mode: SINGLE OUTFIT "
+            "(TOP 3)"
+        )
 
     # ========================================================
     # STEP 1
@@ -41,11 +64,16 @@ def run_stylist_agent(
     for item in data.wardrobe:
 
         if hasattr(item, "model_dump"):
+
             wardrobe_data.append(
                 item.model_dump()
             )
+
         else:
-            wardrobe_data.append(item)
+
+            wardrobe_data.append(
+                item
+            )
 
     # ========================================================
     # STEP 2
@@ -140,7 +168,7 @@ def run_stylist_agent(
 
     # ========================================================
     # STEP 5
-    # EXISTING SCORING
+    # SCORE ALL CANDIDATES
     # ========================================================
 
     scored_outfits = score_outfits(
@@ -151,9 +179,90 @@ def run_stylist_agent(
         learned_preferences
     )
 
+    print(
+        f"\nTotal Fully Scored Outfits: "
+        f"{len(scored_outfits)}"
+    )
+
     # ========================================================
     # STEP 6
-    # DIVERSITY
+    # WEEKLY MODE
+    # ========================================================
+    #
+    # IMPORTANT:
+    #
+    # Weekly planning needs the COMPLETE scored pool.
+    #
+    # Do NOT select Top 3 here.
+    #
+    # The weekly planner will choose from this complete
+    # pool for Day 1 through Day 7.
+    # ========================================================
+
+    if weekly_mode:
+
+        print(
+            "\nWeekly Mode Active"
+        )
+
+        print(
+            "Returning FULL scored outfit pool "
+            "to weekly planner."
+        )
+
+        return {
+
+            "status":
+                "success",
+
+            "requested_occasion":
+                data.occasion,
+
+            "weather":
+                weather,
+
+            "preference_weights": {
+                "short_term": 0.70,
+                "long_term": 0.30
+            },
+
+            "wardrobe_summary": {
+
+                "total_available_items":
+                    wardrobe_intelligence[
+                        "total_available_items"
+                    ],
+
+                "available_groups":
+                    wardrobe_intelligence[
+                        "available_groups"
+                    ]
+            },
+
+            "total_combinations":
+                len(scored_outfits),
+
+            "scored_outfits":
+                scored_outfits,
+
+            # Keep this available for compatibility.
+            # In weekly mode it contains the full pool.
+            "outfits":
+                scored_outfits,
+
+            "diversity":
+                None
+        }
+
+    # ========================================================
+    # STEP 7
+    # NORMAL SINGLE-OUTFIT MODE
+    # ========================================================
+    #
+    # Existing behavior remains unchanged.
+    #
+    # Score ALL candidates first.
+    # Then select Top 3 diverse outfits.
     # ========================================================
 
     diverse_outfits = select_diverse_outfits(
@@ -180,7 +289,9 @@ def run_stylist_agent(
         start=1
     ):
 
-        print(f"\nRank #{index}")
+        print(
+            f"\nRank #{index}"
+        )
 
         print(
             f"Outfit Type: "
@@ -240,18 +351,27 @@ def run_stylist_agent(
     # ========================================================
 
     return {
-        "status": "success",
 
-        "requested_occasion": data.occasion,
+        "status":
+            "success",
 
-        "weather": weather,
+        "requested_occasion":
+            data.occasion,
+
+        "weather":
+            weather,
 
         "preference_weights": {
-            "short_term": 0.70,
-            "long_term": 0.30
+
+            "short_term":
+                0.70,
+
+            "long_term":
+                0.30
         },
 
         "wardrobe_summary": {
+
             "total_available_items":
                 wardrobe_intelligence[
                     "total_available_items"
