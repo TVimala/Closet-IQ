@@ -1,5 +1,6 @@
 from collections import defaultdict
 from itertools import product
+from math import ceil
 
 
 # ============================================================
@@ -170,6 +171,300 @@ ACCESSORY_CATEGORIES = {
 
 
 # ============================================================
+# COLOR FAMILIES
+#
+# This is intentionally rule-based.
+# It does NOT map wardrobe IDs to each other.
+# ============================================================
+
+COLOR_FAMILIES = {
+
+    "white": {
+        "white",
+        "ivory",
+        "cream",
+        "off_white",
+        "off-white"
+    },
+
+    "black": {
+        "black"
+    },
+
+    "grey": {
+        "grey",
+        "gray",
+        "charcoal",
+        "silver"
+    },
+
+    "blue": {
+        "blue",
+        "navy",
+        "sky_blue",
+        "sky-blue",
+        "light_blue",
+        "dark_blue",
+        "royal_blue",
+        "denim"
+    },
+
+    "green": {
+        "green",
+        "olive",
+        "mint",
+        "sage",
+        "forest_green",
+        "forest-green",
+        "emerald"
+    },
+
+    "red": {
+        "red",
+        "maroon",
+        "burgundy",
+        "wine"
+    },
+
+    "pink": {
+        "pink",
+        "baby_pink",
+        "baby-pink",
+        "rose",
+        "blush",
+        "magenta"
+    },
+
+    "purple": {
+        "purple",
+        "lavender",
+        "lilac",
+        "violet"
+    },
+
+    "yellow": {
+        "yellow",
+        "mustard",
+        "gold"
+    },
+
+    "orange": {
+        "orange",
+        "coral",
+        "peach"
+    },
+
+    "brown": {
+        "brown",
+        "tan",
+        "camel",
+        "chocolate"
+    },
+
+    "beige": {
+        "beige",
+        "nude",
+        "sand",
+        "khaki"
+    }
+}
+
+
+# ============================================================
+# COLOR COMPATIBILITY
+#
+# Higher = better visual compatibility.
+#
+# This is a quality score, not a hard rule.
+# Therefore unusual combinations are not automatically
+# discarded.
+# ============================================================
+
+COLOR_COMPATIBILITY = {
+
+    "white": {
+        "white": 85,
+        "black": 100,
+        "grey": 95,
+        "blue": 100,
+        "green": 90,
+        "red": 90,
+        "pink": 95,
+        "purple": 90,
+        "yellow": 90,
+        "orange": 90,
+        "brown": 90,
+        "beige": 95
+    },
+
+    "black": {
+        "white": 100,
+        "black": 80,
+        "grey": 95,
+        "blue": 90,
+        "green": 85,
+        "red": 90,
+        "pink": 90,
+        "purple": 90,
+        "yellow": 90,
+        "orange": 85,
+        "brown": 85,
+        "beige": 90
+    },
+
+    "grey": {
+        "white": 95,
+        "black": 95,
+        "grey": 85,
+        "blue": 95,
+        "green": 90,
+        "red": 85,
+        "pink": 90,
+        "purple": 90,
+        "yellow": 90,
+        "orange": 85,
+        "brown": 85,
+        "beige": 90
+    },
+
+    "blue": {
+        "white": 100,
+        "black": 90,
+        "grey": 95,
+        "blue": 80,
+        "green": 75,
+        "red": 70,
+        "pink": 90,
+        "purple": 85,
+        "yellow": 85,
+        "orange": 80,
+        "brown": 90,
+        "beige": 95
+    },
+
+    "green": {
+        "white": 90,
+        "black": 85,
+        "grey": 90,
+        "blue": 75,
+        "green": 80,
+        "red": 40,
+        "pink": 80,
+        "purple": 75,
+        "yellow": 85,
+        "orange": 75,
+        "brown": 90,
+        "beige": 90
+    },
+
+    "red": {
+        "white": 90,
+        "black": 90,
+        "grey": 85,
+        "blue": 70,
+        "green": 40,
+        "red": 75,
+        "pink": 75,
+        "purple": 70,
+        "yellow": 70,
+        "orange": 65,
+        "brown": 75,
+        "beige": 85
+    },
+
+    "pink": {
+        "white": 95,
+        "black": 90,
+        "grey": 90,
+        "blue": 90,
+        "green": 80,
+        "red": 75,
+        "pink": 80,
+        "purple": 90,
+        "yellow": 85,
+        "orange": 80,
+        "brown": 85,
+        "beige": 95
+    },
+
+    "purple": {
+        "white": 90,
+        "black": 90,
+        "grey": 90,
+        "blue": 85,
+        "green": 75,
+        "red": 70,
+        "pink": 90,
+        "purple": 80,
+        "yellow": 75,
+        "orange": 70,
+        "brown": 80,
+        "beige": 90
+    },
+
+    "yellow": {
+        "white": 90,
+        "black": 90,
+        "grey": 90,
+        "blue": 85,
+        "green": 85,
+        "red": 70,
+        "pink": 85,
+        "purple": 75,
+        "yellow": 75,
+        "orange": 70,
+        "brown": 90,
+        "beige": 90
+    },
+
+    "orange": {
+        "white": 90,
+        "black": 85,
+        "grey": 85,
+        "blue": 80,
+        "green": 75,
+        "red": 65,
+        "pink": 80,
+        "purple": 70,
+        "yellow": 70,
+        "orange": 75,
+        "brown": 90,
+        "beige": 90
+    },
+
+    "brown": {
+        "white": 90,
+        "black": 85,
+        "grey": 85,
+        "blue": 90,
+        "green": 90,
+        "red": 75,
+        "pink": 85,
+        "purple": 80,
+        "yellow": 90,
+        "orange": 90,
+        "brown": 80,
+        "beige": 95
+    },
+
+    "beige": {
+        "white": 95,
+        "black": 90,
+        "grey": 90,
+        "blue": 95,
+        "green": 90,
+        "red": 85,
+        "pink": 95,
+        "purple": 90,
+        "yellow": 90,
+        "orange": 90,
+        "brown": 95,
+        "beige": 85
+    }
+}
+
+
+# ============================================================
 # FIND GROUP FOR CATEGORY
 # ============================================================
 
@@ -205,6 +500,535 @@ def get_accessory_type(category: str):
             return accessory_type
 
     return "other"
+
+
+# ============================================================
+# NORMALIZE COLOR
+# ============================================================
+
+def normalize_color(color):
+
+    if not color:
+        return "unknown"
+
+    normalized = (
+        str(color)
+        .lower()
+        .strip()
+        .replace(" ", "_")
+    )
+
+    for family, colors in COLOR_FAMILIES.items():
+
+        if normalized in colors:
+            return family
+
+    return normalized
+
+
+# ============================================================
+# CALCULATE COLOR COMPATIBILITY BETWEEN TWO ITEMS
+# ============================================================
+
+def calculate_color_compatibility(
+    item_a,
+    item_b
+):
+
+    color_a = normalize_color(
+        item_a.get("color")
+    )
+
+    color_b = normalize_color(
+        item_b.get("color")
+    )
+
+    if (
+        color_a == "unknown"
+        or color_b == "unknown"
+    ):
+        return 70
+
+    if color_a == color_b:
+
+        return COLOR_COMPATIBILITY.get(
+            color_a,
+            {}
+        ).get(
+            color_b,
+            80
+        )
+
+    score_a = COLOR_COMPATIBILITY.get(
+        color_a,
+        {}
+    ).get(
+        color_b
+    )
+
+    score_b = COLOR_COMPATIBILITY.get(
+        color_b,
+        {}
+    ).get(
+        color_a
+    )
+
+    if score_a is not None:
+        return score_a
+
+    if score_b is not None:
+        return score_b
+
+    # Unknown color relationship.
+    # Do not reject it; give a neutral score.
+    return 70
+
+
+# ============================================================
+# CALCULATE OUTFIT COLOR SCORE
+# ============================================================
+
+def calculate_outfit_color_score(
+    items
+):
+
+    if len(items) < 2:
+        return 100
+
+    scores = []
+
+    for first_index in range(
+        len(items)
+    ):
+
+        for second_index in range(
+            first_index + 1,
+            len(items)
+        ):
+
+            score = (
+                calculate_color_compatibility(
+                    items[first_index],
+                    items[second_index]
+                )
+            )
+
+            scores.append(score)
+
+    if not scores:
+        return 100
+
+    return round(
+        sum(scores) / len(scores),
+        2
+    )
+
+
+# ============================================================
+# EXTRACT WEATHER INFORMATION
+#
+# Defensive helper because weather data can evolve.
+# ============================================================
+
+def extract_weather_values(weather):
+
+    if not weather:
+        return set()
+
+    values = set()
+
+    if isinstance(weather, str):
+
+        values.add(
+            weather.lower().strip()
+        )
+
+        return values
+
+    if isinstance(weather, dict):
+
+        relevant_keys = {
+            "season",
+            "weather",
+            "condition",
+            "conditions",
+            "description",
+            "temperature_category",
+            "temperature",
+            "temp"
+        }
+
+        for key, value in weather.items():
+
+            key_lower = str(
+                key
+            ).lower()
+
+            if key_lower not in relevant_keys:
+                continue
+
+            if isinstance(value, str):
+
+                values.add(
+                    value.lower().strip()
+                )
+
+            elif isinstance(value, (int, float)):
+
+                values.add(
+                    str(value)
+                )
+
+        return values
+
+    return values
+
+
+# ============================================================
+# WEATHER RELEVANCE
+#
+# Returns:
+#  1.0 = strong relevance
+#  0.5 = unknown / neutral
+#  0.0 = clearly mismatched
+# ============================================================
+
+def calculate_item_weather_relevance(
+    item,
+    weather
+):
+
+    if not weather:
+        return 0.5
+
+    item_seasons = {
+        str(season).lower().strip()
+        for season in item.get(
+            "season",
+            []
+        )
+    }
+
+    weather_values = (
+        extract_weather_values(
+            weather
+        )
+    )
+
+    if not item_seasons:
+        return 0.5
+
+    if not weather_values:
+        return 0.5
+
+    for season in item_seasons:
+
+        if season in weather_values:
+            return 1.0
+
+    # General temperature/condition keywords
+
+    joined_weather = " ".join(
+        weather_values
+    )
+
+    cold_keywords = {
+        "winter",
+        "cold",
+        "cool",
+        "rain",
+        "rainy",
+        "monsoon"
+    }
+
+    hot_keywords = {
+        "summer",
+        "hot",
+        "warm",
+        "sunny"
+    }
+
+    if (
+        any(
+            keyword in joined_weather
+            for keyword in cold_keywords
+        )
+        and "winter" in item_seasons
+    ):
+        return 1.0
+
+    if (
+        any(
+            keyword in joined_weather
+            for keyword in hot_keywords
+        )
+        and "summer" in item_seasons
+    ):
+        return 1.0
+
+    return 0.5
+
+
+# ============================================================
+# OCCASION RELEVANCE
+# ============================================================
+
+def calculate_item_occasion_relevance(
+    item,
+    occasion
+):
+
+    if not occasion:
+        return 0.5
+
+    item_occasions = {
+        str(value).lower().strip()
+        for value in item.get(
+            "occasion",
+            []
+        )
+    }
+
+    requested_occasion = (
+        str(occasion)
+        .lower()
+        .strip()
+    )
+
+    if not item_occasions:
+        return 0.5
+
+    if requested_occasion in item_occasions:
+        return 1.0
+
+    # Useful general mappings
+
+    occasion_groups = {
+
+        "college": {
+            "college",
+            "casual",
+            "everyday"
+        },
+
+        "casual": {
+            "casual",
+            "everyday",
+            "college"
+        },
+
+        "party": {
+            "party",
+            "casual",
+            "evening"
+        },
+
+        "formal": {
+            "formal",
+            "office",
+            "business"
+        },
+
+        "office": {
+            "office",
+            "formal",
+            "business"
+        },
+
+        "wedding": {
+            "wedding",
+            "festive",
+            "traditional",
+            "party"
+        },
+
+        "vacation": {
+            "vacation",
+            "travel",
+            "beach",
+            "casual"
+        },
+
+        "beach": {
+            "beach",
+            "vacation",
+            "swimwear"
+        }
+    }
+
+    related_occasions = occasion_groups.get(
+        requested_occasion,
+        set()
+    )
+
+    if item_occasions.intersection(
+        related_occasions
+    ):
+        return 0.75
+
+    return 0.0
+
+
+# ============================================================
+# SEASON RELEVANCE
+# ============================================================
+
+def calculate_item_season_relevance(
+    item,
+    season
+):
+
+    if not season:
+        return 0.5
+
+    item_seasons = {
+        str(value).lower().strip()
+        for value in item.get(
+            "season",
+            []
+        )
+    }
+
+    requested_season = (
+        str(season)
+        .lower()
+        .strip()
+    )
+
+    if not item_seasons:
+        return 0.5
+
+    if requested_season in item_seasons:
+        return 1.0
+
+    return 0.0
+
+
+# ============================================================
+# CALCULATE ITEM RELEVANCE SCORE
+# ============================================================
+
+def calculate_item_relevance_score(
+    item,
+    occasion=None,
+    season=None,
+    weather=None
+):
+
+    occasion_score = (
+        calculate_item_occasion_relevance(
+            item,
+            occasion
+        )
+    )
+
+    season_score = (
+        calculate_item_season_relevance(
+            item,
+            season
+        )
+    )
+
+    weather_score = (
+        calculate_item_weather_relevance(
+            item,
+            weather
+        )
+    )
+
+    # Occasion receives the strongest filtering influence.
+    # Weather and season help refine the pool.
+    relevance = (
+        occasion_score * 0.50
+        +
+        season_score * 0.20
+        +
+        weather_score * 0.30
+    )
+
+    return round(
+        relevance,
+        3
+    )
+
+
+# ============================================================
+# SELECT RELEVANT ITEMS
+#
+# IMPORTANT:
+# This does NOT hardcode wardrobe IDs.
+#
+# It dynamically filters the user's actual wardrobe.
+# ============================================================
+
+def select_relevant_items(
+    wardrobe_intelligence,
+    occasion=None,
+    season=None,
+    weather=None
+):
+
+    grouped_items = (
+        wardrobe_intelligence[
+            "grouped_items"
+        ]
+    )
+
+    relevant_grouped_items = (
+        defaultdict(list)
+    )
+
+    for group_name, items in (
+        grouped_items.items()
+    ):
+
+        for item in items:
+
+            relevance_score = (
+                calculate_item_relevance_score(
+                    item,
+                    occasion,
+                    season,
+                    weather
+                )
+            )
+
+            enriched_item = {
+                **item,
+                "relevance_score":
+                    relevance_score
+            }
+
+            # ------------------------------------------------
+            # Keep strongly relevant items.
+            #
+            # Neutral items are also retained because some
+            # wardrobe metadata may be incomplete.
+            # ------------------------------------------------
+
+            if relevance_score >= 0.50:
+
+                relevant_grouped_items[
+                    group_name
+                ].append(
+                    enriched_item
+                )
+
+    # --------------------------------------------------------
+    # IMPORTANT FALLBACK
+    #
+    # If filtering becomes too aggressive because the wardrobe
+    # contains sparse metadata, use the original available
+    # wardrobe rather than returning zero outfits.
+    # --------------------------------------------------------
+
+    if not relevant_grouped_items:
+
+        return grouped_items
+
+    return dict(
+        relevant_grouped_items
+    )
 
 
 # ============================================================
@@ -272,19 +1096,19 @@ def analyze_wardrobe(wardrobe):
         for style in item.get("style", []):
 
             all_styles.add(
-                style.lower()
+                str(style).lower()
             )
 
         for season in item.get("season", []):
 
             all_seasons.add(
-                season.lower()
+                str(season).lower()
             )
 
         for occasion in item.get("occasion", []):
 
             all_occasions.add(
-                occasion.lower()
+                str(occasion).lower()
             )
 
     return {
@@ -379,7 +1203,7 @@ def get_item_categories(items):
 def get_item_styles(item):
 
     return {
-        style.lower()
+        str(style).lower()
         for style in item.get(
             "style",
             []
@@ -439,7 +1263,7 @@ def are_items_compatible(
     # --------------------------------------------------------
 
     occasions_a = {
-        occasion.lower()
+        str(occasion).lower()
         for occasion in item_a.get(
             "occasion",
             []
@@ -447,7 +1271,7 @@ def are_items_compatible(
     }
 
     occasions_b = {
-        occasion.lower()
+        str(occasion).lower()
         for occasion in item_b.get(
             "occasion",
             []
@@ -459,8 +1283,9 @@ def are_items_compatible(
     )
 
     # --------------------------------------------------------
-    # If both style and occasion have no relationship,
-    # consider the combination weak.
+    # Color is intentionally NOT used as a hard rejection.
+    #
+    # Color is a quality signal and will be scored later.
     # --------------------------------------------------------
 
     if (
@@ -503,10 +1328,8 @@ def select_compatible_accessories(
                 )
             )
 
-            # Occasion overlap also helps
-
             accessory_occasions = {
-                occasion.lower()
+                str(occasion).lower()
                 for occasion in accessory.get(
                     "occasion",
                     []
@@ -514,7 +1337,7 @@ def select_compatible_accessories(
             }
 
             base_occasions = {
-                occasion.lower()
+                str(occasion).lower()
                 for occasion in base_item.get(
                     "occasion",
                     []
@@ -533,18 +1356,10 @@ def select_compatible_accessories(
             )
         )
 
-    # Highest compatibility first
-
     selected_candidates.sort(
         key=lambda value: value[0],
         reverse=True
     )
-
-    # --------------------------------------------------------
-    # Keep only meaningful accessories.
-    #
-    # We do NOT force accessories into every outfit.
-    # --------------------------------------------------------
 
     meaningful = [
         item
@@ -558,15 +1373,11 @@ def select_compatible_accessories(
 
     accessory_options = [[]]
 
-    # One accessory
-
     for accessory in meaningful:
 
         accessory_options.append(
             [accessory]
         )
-
-    # Two accessories
 
     if max_accessories >= 2:
 
@@ -586,9 +1397,6 @@ def select_compatible_accessories(
                 second = meaningful[
                     second_index
                 ]
-
-                # Do not add two accessories
-                # from the same subtype.
 
                 first_type = (
                     first.get(
@@ -633,10 +1441,6 @@ def generate_layer_variations(
 
     outfits = []
 
-    # --------------------------------------------------------
-    # FOOTWEAR IS REQUIRED
-    # --------------------------------------------------------
-
     for footwear in footwear_items:
 
         if not are_items_compatible(
@@ -656,10 +1460,6 @@ def generate_layer_variations(
                 outfit_type
             )
         )
-
-        # ----------------------------------------------------
-        # Add compatible outerwear
-        # ----------------------------------------------------
 
         for outerwear in outerwear_items:
 
@@ -694,14 +1494,6 @@ def generate_layer_variations(
 
 # ============================================================
 # GENERATE UPPER + LOWER OUTFITS
-#
-# Example:
-#
-# top + jeans + shoes
-#
-# top + trousers + shoes + blazer
-#
-# top + skirt + shoes + bag
 # ============================================================
 
 def generate_upper_lower_outfits(
@@ -742,10 +1534,6 @@ def generate_upper_lower_outfits(
         lower_items
     ):
 
-        # ----------------------------------------------------
-        # Basic compatibility
-        # ----------------------------------------------------
-
         if not are_items_compatible(
             upper,
             lower
@@ -775,14 +1563,6 @@ def generate_upper_lower_outfits(
 
 # ============================================================
 # GENERATE ONE-PIECE OUTFITS
-#
-# Example:
-#
-# dress + shoes
-# dress + shoes + jacket
-#
-# jumpsuit + shoes
-# jumpsuit + shoes + blazer
 # ============================================================
 
 def generate_one_piece_outfits(
@@ -811,10 +1591,6 @@ def generate_one_piece_outfits(
 
     for one_piece in one_piece_items:
 
-        # ----------------------------------------------------
-        # Mandatory footwear
-        # ----------------------------------------------------
-
         for footwear in footwear_items:
 
             if not are_items_compatible(
@@ -834,10 +1610,6 @@ def generate_one_piece_outfits(
                     "one_piece"
                 )
             )
-
-            # ------------------------------------------------
-            # Optional outerwear
-            # ------------------------------------------------
 
             for outerwear in outerwear_items:
 
@@ -860,14 +1632,6 @@ def generate_one_piece_outfits(
 
 # ============================================================
 # GENERATE KURTI OUTFITS
-#
-# Kurti is NOT treated as a complete outfit.
-#
-# Preferred:
-#
-# kurti + lower + footwear
-#
-# kurti + lower + dupatta + footwear
 # ============================================================
 
 def generate_kurti_outfits(
@@ -943,18 +1707,12 @@ def generate_kurti_outfits(
                     footwear
                 ]
 
-                # Base complete outfit
-
                 outfits.append(
                     create_outfit(
                         base_items,
                         "kurti"
                     )
                 )
-
-                # ------------------------------------------------
-                # Optional dupatta
-                # ------------------------------------------------
 
                 for dupatta in dupatta_items:
 
@@ -977,12 +1735,6 @@ def generate_kurti_outfits(
 
 # ============================================================
 # GENERATE SAREE OUTFITS
-#
-# Saree + footwear
-#
-# Optional:
-# saree + footwear + bag
-# saree + footwear + ethnic accessory
 # ============================================================
 
 def generate_saree_outfits(
@@ -1033,20 +1785,12 @@ def generate_saree_outfits(
                 footwear
             ]
 
-            # ------------------------------------------------
-            # Saree without accessory
-            # ------------------------------------------------
-
             outfits.append(
                 create_outfit(
                     base_items,
                     "saree"
                 )
             )
-
-            # ------------------------------------------------
-            # Add compatible accessories
-            # ------------------------------------------------
 
             accessory_options = (
                 select_compatible_accessories(
@@ -1135,10 +1879,6 @@ def generate_special_traditional_outfits(
                 )
             )
 
-            # ------------------------------------------------
-            # Add meaningful accessories
-            # ------------------------------------------------
-
             accessory_options = (
                 select_compatible_accessories(
                     base_items,
@@ -1165,8 +1905,6 @@ def generate_special_traditional_outfits(
 
 # ============================================================
 # GENERATE TRADITIONAL OUTFITS
-#
-# This wrapper handles all traditional families.
 # ============================================================
 
 def generate_traditional_outfits(
@@ -1175,30 +1913,17 @@ def generate_traditional_outfits(
 
     outfits = []
 
-    # --------------------------------------------------------
-    # Kurti
-    # --------------------------------------------------------
-
     outfits.extend(
         generate_kurti_outfits(
             grouped_items
         )
     )
 
-    # --------------------------------------------------------
-    # Saree
-    # --------------------------------------------------------
-
     outfits.extend(
         generate_saree_outfits(
             grouped_items
         )
     )
-
-    # --------------------------------------------------------
-    # Lehenga / Anarkali /
-    # Salwar Suit / Ethnic Set
-    # --------------------------------------------------------
 
     outfits.extend(
         generate_special_traditional_outfits(
@@ -1211,13 +1936,6 @@ def generate_traditional_outfits(
 
 # ============================================================
 # GENERATE SWIMWEAR OUTFITS
-#
-# Only generated when swimwear actually exists.
-#
-# Example:
-#
-# swimsuit + footwear
-# swimsuit + coverup + footwear
 # ============================================================
 
 def generate_swimwear_outfits(
@@ -1269,8 +1987,6 @@ def generate_swimwear_outfits(
                 )
             )
 
-            # Optional cover-up
-
             for layer in special_layers:
 
                 if not are_items_compatible(
@@ -1292,8 +2008,6 @@ def generate_swimwear_outfits(
 
 # ============================================================
 # GENERATE SPECIAL LAYER OUTFITS
-#
-# This is mainly useful for beach/vacation wardrobes.
 # ============================================================
 
 def generate_special_layer_outfits(
@@ -1327,10 +2041,6 @@ def generate_special_layer_outfits(
         or not footwear_items
     ):
         return outfits
-
-    # --------------------------------------------------------
-    # upper + lower + cover-up + footwear
-    # --------------------------------------------------------
 
     if upper_items and lower_items:
 
@@ -1374,9 +2084,6 @@ def generate_special_layer_outfits(
 
 # ============================================================
 # REMOVE DUPLICATE OUTFITS
-#
-# Prevents identical item combinations from appearing
-# multiple times.
 # ============================================================
 
 def remove_duplicate_outfits(
@@ -1397,6 +2104,7 @@ def remove_duplicate_outfits(
                     "items",
                     []
                 )
+                if item.get("id") is not None
             )
         )
 
@@ -1421,8 +2129,6 @@ def remove_duplicate_outfits(
 
 # ============================================================
 # VALIDATE OUTFIT COMPLETENESS
-#
-# IMPORTANT:
 #
 # Every generated outfit MUST contain footwear.
 # ============================================================
@@ -1455,6 +2161,34 @@ def validate_outfit(
         categories.intersection(
             CATEGORY_GROUPS["footwear"]
         )
+    ):
+        return False
+
+    # --------------------------------------------------------
+    # ONE CATEGORY CANNOT APPEAR TWICE
+    #
+    # Exception: accessories can contain multiple categories.
+    # --------------------------------------------------------
+
+    structural_categories = []
+
+    for item in items:
+
+        group = get_category_group(
+            item.get("category")
+        )
+
+        if group not in {
+            "accessory",
+            "footwear"
+        }:
+
+            structural_categories.append(
+                group
+            )
+
+    if len(structural_categories) != len(
+        set(structural_categories)
     ):
         return False
 
@@ -1597,16 +2331,87 @@ def validate_all_outfits(
 
 
 # ============================================================
+# FILTER LOW QUALITY COLOR COMBINATIONS
+#
+# Color is used AFTER structural generation.
+#
+# We keep the threshold moderate so unusual but valid outfits
+# are not unnecessarily removed.
+# ============================================================
+
+def filter_color_compatible_outfits(
+    outfits,
+    minimum_color_score=55
+):
+
+    filtered_outfits = []
+
+    for outfit in outfits:
+
+        color_score = (
+            calculate_outfit_color_score(
+                outfit.get(
+                    "items",
+                    []
+                )
+            )
+        )
+
+        enriched_outfit = {
+            **outfit,
+            "color_compatibility_score":
+                color_score
+        }
+
+        if color_score >= minimum_color_score:
+
+            filtered_outfits.append(
+                enriched_outfit
+            )
+
+    return filtered_outfits
+
+
+# ============================================================
 # MAIN DYNAMIC OUTFIT GENERATOR
+#
+# New flow:
+#
+# Wardrobe
+#    ↓
+# Relevant item selection
+#    ↓
+# Dynamic outfit families
+#    ↓
+# Structural validation
+#    ↓
+# Color compatibility
+#    ↓
+# Duplicate removal
+#    ↓
+# Candidate pool
 # ============================================================
 
 def generate_dynamic_outfits(
-    wardrobe_intelligence
+    wardrobe_intelligence,
+    occasion=None,
+    season=None,
+    weather=None
 ):
 
-    grouped_items = wardrobe_intelligence[
-        "grouped_items"
-    ]
+    # ========================================================
+    # STEP A
+    # RELEVANT ITEM SELECTION
+    # ========================================================
+
+    relevant_grouped_items = (
+        select_relevant_items(
+            wardrobe_intelligence,
+            occasion=occasion,
+            season=season,
+            weather=weather
+        )
+    )
 
     all_outfits = []
 
@@ -1617,7 +2422,7 @@ def generate_dynamic_outfits(
 
     upper_lower_outfits = (
         generate_upper_lower_outfits(
-            grouped_items
+            relevant_grouped_items
         )
     )
 
@@ -1632,7 +2437,7 @@ def generate_dynamic_outfits(
 
     one_piece_outfits = (
         generate_one_piece_outfits(
-            grouped_items
+            relevant_grouped_items
         )
     )
 
@@ -1647,7 +2452,7 @@ def generate_dynamic_outfits(
 
     traditional_outfits = (
         generate_traditional_outfits(
-            grouped_items
+            relevant_grouped_items
         )
     )
 
@@ -1662,7 +2467,7 @@ def generate_dynamic_outfits(
 
     swimwear_outfits = (
         generate_swimwear_outfits(
-            grouped_items
+            relevant_grouped_items
         )
     )
 
@@ -1677,7 +2482,7 @@ def generate_dynamic_outfits(
 
     special_layer_outfits = (
         generate_special_layer_outfits(
-            grouped_items
+            relevant_grouped_items
         )
     )
 
@@ -1686,25 +2491,31 @@ def generate_dynamic_outfits(
     )
 
     # ========================================================
-    # REMOVE DUPLICATES
+    # STRUCTURAL VALIDATION
     # ========================================================
 
     all_outfits = (
-        remove_duplicate_outfits(
+        validate_all_outfits(
             all_outfits
         )
     )
 
     # ========================================================
-    # FINAL COMPLETENESS CHECK
-    #
-    # This is the safety net.
-    # Even if a future generator creates something
-    # incomplete, it will NOT reach the scoring stage.
+    # COLOR COMPATIBILITY
     # ========================================================
 
     all_outfits = (
-        validate_all_outfits(
+        filter_color_compatible_outfits(
+            all_outfits
+        )
+    )
+
+    # ========================================================
+    # REMOVE DUPLICATES
+    # ========================================================
+
+    all_outfits = (
+        remove_duplicate_outfits(
             all_outfits
         )
     )

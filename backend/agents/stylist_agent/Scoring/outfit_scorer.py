@@ -96,12 +96,32 @@ def score_outfits(
 
 
         # ----------------------------------------------------
+        # COLOR COMPATIBILITY
+        #
+        # This was calculated during candidate generation.
+        #
+        # It is currently stored as a separate quality signal.
+        # We are NOT changing the existing 45/25/20/10 weights
+        # yet.
+        # ----------------------------------------------------
+
+        color_compatibility_score = (
+            outfit.get(
+                "color_compatibility_score",
+                70
+            )
+        )
+
+
+        # ----------------------------------------------------
         # FINAL SCORE
         #
         # Occasion             = 45%
         # Explicit Preferences = 25%
         # Weather              = 20%
         # Learned Feedback     = 10%
+        #
+        # These weights remain unchanged.
         # ----------------------------------------------------
 
         final_score = (
@@ -140,6 +160,11 @@ def score_outfits(
 
             "learned_preference_score": round(
                 learned_preference_score,
+                2
+            ),
+
+            "color_compatibility_score": round(
+                color_compatibility_score,
                 2
             ),
 

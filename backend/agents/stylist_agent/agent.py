@@ -16,182 +16,178 @@ from .Scoring.outfit_scorer import (
     score_outfits
 )
 
+from .Scoring.color_compatibility import (
+    filter_color_compatible_outfits
+)
 
-# ============================================================
-# MAIN STYLIST AGENT
-# ============================================================
 
 def run_stylist_agent(
     data,
     weather,
     learned_preferences=None
 ):
-
-    print(
-        "\n==================================="
-    )
-
-    print(
-        "STYLIST AGENT STARTED"
-    )
-
-    print(
-        "==================================="
-    )
-
-    print(
-        f"\nRequested Occasion: "
-        f"{data.occasion}"
-    )
-
+    print("\n===================================")
+    print("STYLIST AGENT STARTED")
+    print("===================================")
+    print(f"\nRequested Occasion: {data.occasion}")
 
     # ========================================================
     # STEP 1
-    # ANALYZE USER WARDROBE
+    # CONVERT WARDROBE TO DICTIONARIES
     # ========================================================
 
     wardrobe_data = []
 
     for item in data.wardrobe:
 
-        if hasattr(
-            item,
-            "model_dump"
-        ):
-
+        if hasattr(item, "model_dump"):
             wardrobe_data.append(
                 item.model_dump()
             )
-
         else:
+            wardrobe_data.append(item)
 
-            wardrobe_data.append(
-                item
-            )
+    # ========================================================
+    # STEP 2
+    # WARDROBE INTELLIGENCE
+    # ========================================================
 
-
-    wardrobe_intelligence = (
-        analyze_wardrobe(
-            wardrobe_data
-        )
+    wardrobe_intelligence = analyze_wardrobe(
+        wardrobe_data
     )
-
 
     print(
         f"\nTotal Available Wardrobe Items: "
         f"{wardrobe_intelligence['total_available_items']}"
     )
 
-
     # ========================================================
-    # STEP 2
-    # GENERATE DYNAMIC OUTFITS
+    # STEP 3
+    # DYNAMIC OUTFIT GENERATION
     # ========================================================
 
-    combinations = (
-        generate_dynamic_outfits(
-            wardrobe_intelligence
-        )
+    combinations = generate_dynamic_outfits(
+        wardrobe_intelligence
     )
-
 
     print(
         f"\nTotal Dynamic Outfit Candidates: "
         f"{len(combinations)}"
     )
 
+    # ========================================================
+    # STEP 4
+    # COLOR COMPATIBILITY
+    # ========================================================
+
+    color_compatible_outfits = (
+        filter_color_compatible_outfits(
+            combinations,
+            minimum_score=45
+        )
+    )
+
+    print(
+        f"Color-Compatible Outfit Candidates: "
+        f"{len(color_compatible_outfits)}"
+    )
+
+    removed_by_color = (
+        len(combinations)
+        - len(color_compatible_outfits)
+    )
+
+    print(
+        f"Removed by Color Compatibility: "
+        f"{removed_by_color}"
+    )
 
     # ========================================================
-    # STEP 3 + STEP 4 + STEP 5
-    # SCORE ALL OUTFITS
+    # SAFETY FALLBACK
+    # ========================================================
+    #
+    # If color filtering unexpectedly removes every
+    # candidate, keep the original dynamic candidates.
+    #
+    # This prevents the color engine from making the
+    # entire stylist fail because of unusual colors.
+    # ========================================================
+
+    if not color_compatible_outfits:
+
+        print(
+            "\nWARNING: Color filtering removed "
+            "all candidates."
+        )
+
+        print(
+            "Falling back to original dynamic "
+            "outfit candidates."
+        )
+
+        color_compatible_outfits = []
+
+        for outfit in combinations:
+
+            enriched_outfit = {
+                **outfit,
+                "color_compatibility_score": 50
+            }
+
+            color_compatible_outfits.append(
+                enriched_outfit
+            )
+
+    # ========================================================
+    # STEP 5
+    # EXISTING SCORING
     # ========================================================
 
     scored_outfits = score_outfits(
-
-        combinations,
-
+        color_compatible_outfits,
         data.occasion,
-
         data.preferences,
-
         weather,
-
         learned_preferences
     )
 
-
     # ========================================================
-    # STEP 10
-    # RECOMMENDATION DIVERSITY
+    # STEP 6
+    # DIVERSITY
     # ========================================================
 
-    diverse_outfits = (
-        select_diverse_outfits(
-
-            scored_outfits,
-
-            limit=3,
-
-            similarity_threshold=0.60
-        )
+    diverse_outfits = select_diverse_outfits(
+        scored_outfits,
+        limit=3,
+        similarity_threshold=0.60
     )
 
-
-    # ========================================================
-    # STEP 10
-    # DIVERSITY SUMMARY
-    # ========================================================
-
-    diversity_summary = (
-        calculate_diversity_summary(
-
-            scored_outfits,
-
-            diverse_outfits
-        )
+    diversity_summary = calculate_diversity_summary(
+        scored_outfits,
+        diverse_outfits
     )
 
-
     # ========================================================
-    # DISPLAY FINAL RECOMMENDATIONS
+    # DISPLAY TOP OUTFITS
     # ========================================================
 
-    print(
-        "\n==================================="
-    )
-
-    print(
-        "TOP DIVERSE OUTFITS"
-    )
-
-    print(
-        "==================================="
-    )
-
+    print("\n===================================")
+    print("TOP DIVERSE OUTFITS")
+    print("===================================")
 
     for index, outfit in enumerate(
-
         diverse_outfits,
-
         start=1
-
     ):
 
-        print(
-            f"\nRank #{index}"
-        )
-
+        print(f"\nRank #{index}")
 
         print(
             f"Outfit Type: "
             f"{outfit['outfit_type']}"
         )
 
-
-        print(
-            "Items:"
-        )
-
+        print("Items:")
 
         for item in outfit["items"]:
 
@@ -201,18 +197,20 @@ def run_stylist_agent(
                 f"({item.get('id', '')})"
             )
 
+        print(
+            f"Color Compatibility Score: "
+            f"{outfit.get('color_compatibility_score', 0)}/100"
+        )
 
         print(
             f"Occasion Score: "
             f"{outfit['occasion_score']}/100"
         )
 
-
         print(
             f"Preference Score: "
             f"{outfit['preference_score']}/100"
         )
-
 
         print(
             f"Weather Score: "
@@ -229,29 +227,6 @@ def run_stylist_agent(
             f"{outfit['final_score']}/100"
         )
 
-
-        # ====================================================
-        # STEP 9
-        # RECOMMENDATION REASONS
-        # ====================================================
-
-        # if outfit.get("reasons"):
-
-        #     print(
-        #         "Reasons:"
-        #     )
-
-        #     for reason in outfit["reasons"]:
-
-        #         print(
-        #             f" - {reason}"
-        #         )
-
-
-    # ========================================================
-    # IF FEWER THAN 3 UNIQUE OUTFITS EXIST
-    # ========================================================
-
     if len(diverse_outfits) < 3:
 
         print(
@@ -260,45 +235,23 @@ def run_stylist_agent(
             "different outfit(s) were available."
         )
 
-
     # ========================================================
-    # RETURN API RESPONSE
+    # FINAL RESPONSE
     # ========================================================
 
     return {
+        "status": "success",
 
-        "status":
-            "success",
+        "requested_occasion": data.occasion,
 
-
-        "requested_occasion":
-            data.occasion,
-
-
-        "weather":
-            weather,
-
-
-        # ====================================================
-        # TEMPORAL PREFERENCE WEIGHTS
-        # ====================================================
+        "weather": weather,
 
         "preference_weights": {
-
-            "short_term":
-                0.70,
-
-            "long_term":
-                0.30
+            "short_term": 0.70,
+            "long_term": 0.30
         },
 
-
-        # ====================================================
-        # WARDROBE SUMMARY
-        # ====================================================
-
         "wardrobe_summary": {
-
             "total_available_items":
                 wardrobe_intelligence[
                     "total_available_items"
@@ -310,26 +263,11 @@ def run_stylist_agent(
                 ]
         },
 
-
-        # ====================================================
-        # ALL GENERATED CANDIDATES
-        # ====================================================
-
         "total_combinations":
             len(scored_outfits),
 
-
-        # ====================================================
-        # STEP 10 DIVERSITY INFORMATION
-        # ====================================================
-
         "diversity":
             diversity_summary,
-
-
-        # ====================================================
-        # FINAL RECOMMENDATIONS
-        # ====================================================
 
         "outfits":
             diverse_outfits
