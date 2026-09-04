@@ -9,7 +9,8 @@ from services.wardrobe_intelligence import (
 
 from .Scoring.diversity import (
     select_diverse_outfits,
-    calculate_diversity_summary
+    calculate_diversity_summary,
+    calculate_combined_similarity
 )
 
 from .Scoring.outfit_scorer import (
@@ -21,26 +22,219 @@ from .Scoring.color_compatibility import (
 )
 
 
+# ============================================================
+# GET OUTFIT ITEM IDS
+# ============================================================
+
+def get_outfit_item_ids(outfit):
+
+    return {
+        item.get("id")
+        for item in outfit.get("items", [])
+        if item.get("id")
+    }
+
+
+# ============================================================
+# CHECK EXACT PREVIOUS OUTFIT
+# ============================================================
+
+def is_same_outfit(
+    candidate,
+    previous_outfit
+):
+
+    if not previous_outfit:
+
+        return False
+
+    candidate_ids = (
+        get_outfit_item_ids(
+            candidate
+        )
+    )
+
+    previous_ids = (
+        get_outfit_item_ids(
+            previous_outfit
+        )
+    )
+
+    return (
+        candidate_ids == previous_ids
+        and
+        bool(candidate_ids)
+    )
+
+
+# ============================================================
+# CHECK GENUINE DIFFERENCE
+# ============================================================
+#
+# Uses the SAME diversity logic already used by the
+# recommendation system.
+#
+# This prevents regeneration from simply changing shoes
+# while keeping the main outfit almost identical.
+# ============================================================
+
+def is_genuinely_different(
+    candidate,
+    previous_outfit,
+    similarity_threshold=0.60
+):
+
+    if not previous_outfit:
+
+        return True
+
+    similarity = (
+        calculate_combined_similarity(
+            candidate,
+            previous_outfit
+        )
+    )
+
+    return (
+        similarity < similarity_threshold
+    )
+
+
+# ============================================================
+# FILTER REGENERATION CANDIDATES
+# ============================================================
+
+def filter_regeneration_candidates(
+    scored_outfits,
+    previous_outfit,
+    similarity_threshold=0.60
+):
+
+    if not previous_outfit:
+
+        return scored_outfits
+
+    regenerated_candidates = []
+
+    exact_removed = 0
+    similar_removed = 0
+
+    for outfit in scored_outfits:
+
+        # ----------------------------------------------------
+        # REMOVE EXACT PREVIOUS OUTFIT
+        # ----------------------------------------------------
+
+        if is_same_outfit(
+            outfit,
+            previous_outfit
+        ):
+
+            exact_removed += 1
+
+            continue
+
+        # ----------------------------------------------------
+        # REMOVE NEAR-DUPLICATE OUTFITS
+        # ----------------------------------------------------
+
+        if not is_genuinely_different(
+            outfit,
+            previous_outfit,
+            similarity_threshold
+        ):
+
+            similar_removed += 1
+
+            continue
+
+        regenerated_candidates.append(
+            outfit
+        )
+
+    print(
+        "\n==================================="
+    )
+
+    print(
+        "REGENERATION FILTER"
+    )
+
+    print(
+        "==================================="
+    )
+
+    print(
+        f"Original Scored Candidates: "
+        f"{len(scored_outfits)}"
+    )
+
+    print(
+        f"Exact Previous Outfit Removed: "
+        f"{exact_removed}"
+    )
+
+    print(
+        f"Near-Duplicate Outfits Removed: "
+        f"{similar_removed}"
+    )
+
+    print(
+        f"Genuinely Different Candidates: "
+        f"{len(regenerated_candidates)}"
+    )
+
+    return regenerated_candidates
+
+
+# ============================================================
+# MAIN STYLIST AGENT
+# ============================================================
+
 def run_stylist_agent(
     data,
     weather,
     learned_preferences=None,
     weekly_mode=False
 ):
+
     print("\n===================================")
-    print("STYLIST AGENT STARTED")
-    print("===================================")
+
+    print(
+        "STYLIST AGENT STARTED"
+    )
+
+    print(
+        "==================================="
+    )
 
     print(
         f"\nRequested Occasion: "
         f"{data.occasion}"
     )
 
+
     # ========================================================
-    # MODE
+    # REGENERATION MODE
     # ========================================================
 
-    if weekly_mode:
+    regeneration_mode = (
+        data.previous_outfit is not None
+    )
+
+
+    if regeneration_mode:
+
+        print(
+            "Mode: REGENERATION"
+        )
+
+        print(
+            f"Regeneration Reason: "
+            f"{data.regeneration_reason}"
+        )
+
+    elif weekly_mode:
 
         print(
             "Mode: WEEKLY PLANNING "
@@ -54,6 +248,7 @@ def run_stylist_agent(
             "(TOP 3)"
         )
 
+
     # ========================================================
     # STEP 1
     # CONVERT WARDROBE TO DICTIONARIES
@@ -63,7 +258,10 @@ def run_stylist_agent(
 
     for item in data.wardrobe:
 
-        if hasattr(item, "model_dump"):
+        if hasattr(
+            item,
+            "model_dump"
+        ):
 
             wardrobe_data.append(
                 item.model_dump()
@@ -75,13 +273,16 @@ def run_stylist_agent(
                 item
             )
 
+
     # ========================================================
     # STEP 2
     # WARDROBE INTELLIGENCE
     # ========================================================
 
-    wardrobe_intelligence = analyze_wardrobe(
-        wardrobe_data
+    wardrobe_intelligence = (
+        analyze_wardrobe(
+            wardrobe_data
+        )
     )
 
     print(
@@ -89,19 +290,23 @@ def run_stylist_agent(
         f"{wardrobe_intelligence['total_available_items']}"
     )
 
+
     # ========================================================
     # STEP 3
     # DYNAMIC OUTFIT GENERATION
     # ========================================================
 
-    combinations = generate_dynamic_outfits(
-        wardrobe_intelligence
+    combinations = (
+        generate_dynamic_outfits(
+            wardrobe_intelligence
+        )
     )
 
     print(
         f"\nTotal Dynamic Outfit Candidates: "
         f"{len(combinations)}"
     )
+
 
     # ========================================================
     # STEP 4
@@ -122,7 +327,8 @@ def run_stylist_agent(
 
     removed_by_color = (
         len(combinations)
-        - len(color_compatible_outfits)
+        -
+        len(color_compatible_outfits)
     )
 
     print(
@@ -130,15 +336,9 @@ def run_stylist_agent(
         f"{removed_by_color}"
     )
 
+
     # ========================================================
     # SAFETY FALLBACK
-    # ========================================================
-    #
-    # If color filtering unexpectedly removes every
-    # candidate, keep the original dynamic candidates.
-    #
-    # This prevents the color engine from making the
-    # entire stylist fail because of unusual colors.
     # ========================================================
 
     if not color_compatible_outfits:
@@ -158,13 +358,17 @@ def run_stylist_agent(
         for outfit in combinations:
 
             enriched_outfit = {
+
                 **outfit,
-                "color_compatibility_score": 50
+
+                "color_compatibility_score":
+                    50
             }
 
             color_compatible_outfits.append(
                 enriched_outfit
             )
+
 
     # ========================================================
     # STEP 5
@@ -172,10 +376,15 @@ def run_stylist_agent(
     # ========================================================
 
     scored_outfits = score_outfits(
+
         color_compatible_outfits,
+
         data.occasion,
+
         data.preferences,
+
         weather,
+
         learned_preferences
     )
 
@@ -184,19 +393,173 @@ def run_stylist_agent(
         f"{len(scored_outfits)}"
     )
 
+
     # ========================================================
     # STEP 6
-    # WEEKLY MODE
+    # REGENERATION MODE
     # ========================================================
     #
-    # IMPORTANT:
+    # The complete candidate pool is already scored.
     #
-    # Weekly planning needs the COMPLETE scored pool.
+    # Now:
     #
-    # Do NOT select Top 3 here.
+    # 1. Remove exact previous outfit.
+    # 2. Remove near-duplicates.
+    # 3. Keep genuinely different outfits.
+    # 4. Pick the highest-scoring one.
     #
-    # The weekly planner will choose from this complete
-    # pool for Day 1 through Day 7.
+    # This means regeneration does NOT randomly generate
+    # another outfit.
+    #
+    # It searches the existing dynamic outfit space for
+    # the best genuinely different recommendation.
+    # ========================================================
+
+    if regeneration_mode:
+
+        regenerated_candidates = (
+            filter_regeneration_candidates(
+
+                scored_outfits,
+
+                data.previous_outfit,
+
+                similarity_threshold=0.60
+            )
+        )
+
+
+        # ====================================================
+        # NO DIFFERENT OUTFIT
+        # ====================================================
+
+        if not regenerated_candidates:
+
+            print(
+                "\n==================================="
+            )
+
+            print(
+                "REGENERATION FAILED"
+            )
+
+            print(
+                "==================================="
+            )
+
+            print(
+                "No genuinely different outfit "
+                "is available."
+            )
+
+            return {
+
+                "status":
+                    "no_regeneration_available",
+
+                "requested_occasion":
+                    data.occasion,
+
+                "weather":
+                    weather,
+
+                "regeneration_reason":
+                    data.regeneration_reason,
+
+                "previous_outfit":
+                    data.previous_outfit,
+
+                "outfits":
+                    [],
+
+                "total_combinations":
+                    len(scored_outfits)
+            }
+
+
+        # ====================================================
+        # BEST REGENERATED OUTFIT
+        # ====================================================
+
+        regenerated_outfit = (
+            regenerated_candidates[0]
+        )
+
+
+        print(
+            "\n==================================="
+        )
+
+        print(
+            "REGENERATED OUTFIT"
+        )
+
+        print(
+            "==================================="
+        )
+
+        print(
+            f"Reason: "
+            f"{data.regeneration_reason}"
+        )
+
+        print(
+            f"Outfit Type: "
+            f"{regenerated_outfit['outfit_type']}"
+        )
+
+        print("Items:")
+
+        for item in regenerated_outfit["items"]:
+
+            print(
+                f" - {item.get('color', '')} "
+                f"{item.get('category', '')} "
+                f"({item.get('id', '')})"
+            )
+
+        print(
+            f"Final Score: "
+            f"{regenerated_outfit['final_score']}"
+        )
+
+
+        return {
+
+            "status":
+                "success",
+
+            "requested_occasion":
+                data.occasion,
+
+            "weather":
+                weather,
+
+            "regeneration":
+                True,
+
+            "regeneration_reason":
+                data.regeneration_reason,
+
+            "previous_outfit":
+                data.previous_outfit,
+
+            "total_combinations":
+                len(scored_outfits),
+
+            "regenerated_candidates":
+                len(regenerated_candidates),
+
+            "outfits":
+                [
+                    regenerated_outfit
+                ]
+        }
+
+
+    # ========================================================
+    # STEP 7
+    # WEEKLY MODE
     # ========================================================
 
     if weekly_mode:
@@ -222,8 +585,12 @@ def run_stylist_agent(
                 weather,
 
             "preference_weights": {
-                "short_term": 0.70,
-                "long_term": 0.30
+
+                "short_term":
+                    0.70,
+
+                "long_term":
+                    0.30
             },
 
             "wardrobe_summary": {
@@ -254,39 +621,56 @@ def run_stylist_agent(
                 None
         }
 
+
     # ========================================================
-    # STEP 7
+    # STEP 8
     # NORMAL SINGLE-OUTFIT MODE
     # ========================================================
-    #
-    # Existing behavior remains unchanged.
-    #
-    # Score ALL candidates first.
-    # Then select Top 3 diverse outfits.
-    # ========================================================
 
-    diverse_outfits = select_diverse_outfits(
-        scored_outfits,
-        limit=3,
-        similarity_threshold=0.60
+    diverse_outfits = (
+        select_diverse_outfits(
+
+            scored_outfits,
+
+            limit=3,
+
+            similarity_threshold=0.60
+        )
     )
 
-    diversity_summary = calculate_diversity_summary(
-        scored_outfits,
-        diverse_outfits
+    diversity_summary = (
+        calculate_diversity_summary(
+
+            scored_outfits,
+
+            diverse_outfits
+        )
     )
+
 
     # ========================================================
     # DISPLAY TOP OUTFITS
     # ========================================================
 
-    print("\n===================================")
-    print("TOP DIVERSE OUTFITS")
-    print("===================================")
+    print(
+        "\n==================================="
+    )
+
+    print(
+        "TOP DIVERSE OUTFITS"
+    )
+
+    print(
+        "==================================="
+    )
+
 
     for index, outfit in enumerate(
+
         diverse_outfits,
+
         start=1
+
     ):
 
         print(
@@ -298,7 +682,9 @@ def run_stylist_agent(
             f"{outfit['outfit_type']}"
         )
 
-        print("Items:")
+        print(
+            "Items:"
+        )
 
         for item in outfit["items"]:
 
@@ -338,6 +724,7 @@ def run_stylist_agent(
             f"{outfit['final_score']}/100"
         )
 
+
     if len(diverse_outfits) < 3:
 
         print(
@@ -345,6 +732,7 @@ def run_stylist_agent(
             f"{len(diverse_outfits)} genuinely "
             "different outfit(s) were available."
         )
+
 
     # ========================================================
     # FINAL RESPONSE

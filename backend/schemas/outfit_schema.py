@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 
 
@@ -144,6 +144,18 @@ class StylistInput(BaseModel):
     wardrobe: List[WardrobeItem]
 
     preferences: UserPreferences
+
+    # ========================================================
+    # REGENERATION
+    # ========================================================
+    #
+    # These are optional so existing requests continue
+    # working exactly as before.
+    # ========================================================
+
+    previous_outfit: Optional[Dict[str, Any]] = None
+
+    regeneration_reason: Optional[str] = None
 
 
 # ============================================================
