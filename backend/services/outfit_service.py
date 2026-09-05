@@ -1351,6 +1351,620 @@ MOCK_WARDROBE = [
         "usage_count": 12,
         "last_worn_at": None,
         "embedding": None
+    },
+        # ============================================================
+    # ADDITIONAL FOOTWEAR
+    # ============================================================
+
+    {
+        "id": "W066",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "shoes",
+        "color": "gold",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["elegant", "party", "feminine"],
+        "season": ["all"],
+        "occasion": ["party", "wedding", "festive", "date", "dinner"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W067",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "shoes",
+        "color": "pink",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["feminine", "elegant"],
+        "season": ["spring", "summer"],
+        "occasion": ["date", "brunch", "party", "festive"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W068",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "shoes",
+        "color": "navy",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["classic", "formal", "elegant"],
+        "season": ["all"],
+        "occasion": ["office", "formal", "dinner", "date"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W069",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "shoes",
+        "color": "cream",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["minimal", "elegant", "feminine"],
+        "season": ["spring", "summer", "autumn"],
+        "occasion": ["date", "brunch", "casual", "formal", "office"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W070",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "shoes",
+        "color": "black",
+        "pattern": "patent",
+        "fit": None,
+        "style": ["elegant", "formal", "bold"],
+        "season": ["all"],
+        "occasion": ["party", "formal", "dinner", "date"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    # ============================================================
+    # ADDITIONAL ACCESSORIES
+    # ============================================================
+
+    {
+        "id": "W071",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "necklace",
+        "color": "gold",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["elegant", "feminine", "party"],
+        "season": ["all"],
+        "occasion": ["party", "wedding", "festive", "date", "dinner"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W072",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "earrings",
+        "color": "gold",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["elegant", "feminine", "traditional"],
+        "season": ["all"],
+        "occasion": ["wedding", "festive", "party", "date", "dinner"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W073",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "bracelet",
+        "color": "silver",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["minimal", "elegant", "classic"],
+        "season": ["all"],
+        "occasion": ["office", "formal", "date", "dinner", "casual"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W074",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "ring",
+        "color": "silver",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["minimal", "elegant", "classic"],
+        "season": ["all"],
+        "occasion": ["office", "formal", "date", "dinner", "casual"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W075",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "belt",
+        "color": "brown",
+        "pattern": "leather",
+        "fit": None,
+        "style": ["classic", "casual", "boho"],
+        "season": ["all"],
+        "occasion": ["college", "casual", "travel", "office"],
+        "condition": "good",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W076",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "watch",
+        "color": "silver",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["minimal", "classic", "formal"],
+        "season": ["all"],
+        "occasion": ["college", "office", "formal", "casual", "date"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W077",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "sunglasses",
+        "color": "brown",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["casual", "boho", "trendy"],
+        "season": ["spring", "summer"],
+        "occasion": ["travel", "vacation", "casual", "brunch", "college"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W078",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "hat",
+        "color": "beige",
+        "pattern": "woven",
+        "fit": None,
+        "style": ["casual", "boho", "vacation"],
+        "season": ["spring", "summer"],
+        "occasion": ["vacation", "beach", "travel", "brunch"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W079",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "earrings",
+        "color": "silver",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["minimal", "classic", "elegant"],
+        "season": ["all"],
+        "occasion": ["office", "formal", "date", "dinner", "casual"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W080",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "necklace",
+        "color": "silver",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["minimal", "classic", "elegant"],
+        "season": ["all"],
+        "occasion": ["office", "formal", "date", "dinner", "casual"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+    # ============================================================
+    # FOOTWEAR TYPES — HEELS
+    # ============================================================
+
+    {
+        "id": "W081",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "heels",
+        "color": "black",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["elegant", "formal", "feminine"],
+        "season": ["all"],
+        "occasion": ["party", "date", "dinner", "formal", "office"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W082",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "heels",
+        "color": "red",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["bold", "party", "feminine"],
+        "season": ["all"],
+        "occasion": ["party", "date", "dinner"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W083",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "heels",
+        "color": "gold",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["elegant", "party", "feminine"],
+        "season": ["all"],
+        "occasion": ["party", "wedding", "festive", "date"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    # ============================================================
+    # SANDALS
+    # ============================================================
+
+    {
+        "id": "W084",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "sandals",
+        "color": "brown",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["casual", "boho", "comfortable"],
+        "season": ["spring", "summer"],
+        "occasion": ["casual", "travel", "vacation", "college", "brunch"],
+        "condition": "good",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W085",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "sandals",
+        "color": "beige",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["minimal", "feminine", "casual"],
+        "season": ["spring", "summer"],
+        "occasion": ["casual", "brunch", "date", "vacation"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W086",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "sandals",
+        "color": "gold",
+        "pattern": "metallic",
+        "fit": None,
+        "style": ["elegant", "feminine"],
+        "season": ["spring", "summer"],
+        "occasion": ["festive", "wedding", "party", "date"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    # ============================================================
+    # FLATS
+    # ============================================================
+
+    {
+        "id": "W087",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "flats",
+        "color": "black",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["minimal", "comfortable", "classic"],
+        "season": ["all"],
+        "occasion": ["college", "casual", "office", "brunch", "travel"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W088",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "flats",
+        "color": "cream",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["minimal", "feminine", "elegant"],
+        "season": ["spring", "summer"],
+        "occasion": ["college", "casual", "brunch", "date", "office"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    # ============================================================
+    # LOAFERS
+    # ============================================================
+
+    {
+        "id": "W089",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "loafers",
+        "color": "brown",
+        "pattern": "leather",
+        "fit": None,
+        "style": ["classic", "formal", "minimal"],
+        "season": ["all"],
+        "occasion": ["office", "formal", "college", "casual", "dinner"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W090",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "loafers",
+        "color": "black",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["formal", "classic", "elegant"],
+        "season": ["all"],
+        "occasion": ["office", "formal", "dinner"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    # ============================================================
+    # BOOTS
+    # ============================================================
+
+    {
+        "id": "W091",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "boots",
+        "color": "black",
+        "pattern": "leather",
+        "fit": None,
+        "style": ["edgy", "trendy", "bold"],
+        "season": ["autumn", "winter"],
+        "occasion": ["casual", "date", "party", "travel"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    {
+        "id": "W092",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "boots",
+        "color": "brown",
+        "pattern": "leather",
+        "fit": None,
+        "style": ["casual", "boho", "classic"],
+        "season": ["autumn", "winter"],
+        "occasion": ["casual", "travel", "date"],
+        "condition": "good",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    # ============================================================
+    # WEDGES
+    # ============================================================
+
+    {
+        "id": "W093",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "wedges",
+        "color": "beige",
+        "pattern": "woven",
+        "fit": None,
+        "style": ["casual", "feminine", "boho"],
+        "season": ["spring", "summer"],
+        "occasion": ["brunch", "vacation", "travel", "casual", "date"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
+    },
+
+    # ============================================================
+    # MULES
+    # ============================================================
+
+    {
+        "id": "W094",
+        "user_id": "U001",
+        "image_url": None,
+        "category": "mules",
+        "color": "cream",
+        "pattern": "solid",
+        "fit": None,
+        "style": ["minimal", "elegant", "classic"],
+        "season": ["spring", "summer", "autumn"],
+        "occasion": ["office", "brunch", "date", "casual", "formal"],
+        "condition": "excellent",
+        "is_available": True,
+        "created_at": None,
+        "updated_at": None,
+        "usage_count": 0,
+        "last_worn_at": None,
+        "embedding": None
     }
 
 ]

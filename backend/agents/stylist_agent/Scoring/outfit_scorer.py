@@ -21,6 +21,10 @@ from .learned_preferences import (
     calculate_learned_preference_score
 )
 
+from .accessories import (
+    add_optional_accessory
+)
+
 
 # ============================================================
 # SCORE ALL OUTFITS
@@ -31,10 +35,15 @@ def score_outfits(
     occasion,
     preferences,
     weather,
-    learned_preferences=None
+    learned_preferences=None,
+    wardrobe=None
 ):
 
     scored_outfits = []
+
+    if wardrobe is None:
+
+        wardrobe = []
 
 
     # ========================================================
@@ -97,12 +106,6 @@ def score_outfits(
 
         # ----------------------------------------------------
         # COLOR COMPATIBILITY
-        #
-        # This was calculated during candidate generation.
-        #
-        # It is currently stored as a separate quality signal.
-        # We are NOT changing the existing 45/25/20/10 weights
-        # yet.
         # ----------------------------------------------------
 
         color_compatibility_score = (
@@ -116,12 +119,12 @@ def score_outfits(
         # ----------------------------------------------------
         # FINAL SCORE
         #
+        # Existing weights remain unchanged.
+        #
         # Occasion             = 45%
         # Explicit Preferences = 25%
         # Weather              = 20%
         # Learned Feedback     = 10%
-        #
-        # These weights remain unchanged.
         # ----------------------------------------------------
 
         final_score = (
@@ -187,6 +190,36 @@ def score_outfits(
     scored_outfits.sort(
         key=lambda outfit: outfit["final_score"],
         reverse=True
+    )
+
+
+    # ========================================================
+    # OPTIONAL ACCESSORY HANDLING
+    # ========================================================
+    #
+    # Accessories are added AFTER the main outfit has been
+    # scored.
+    # ========================================================
+
+    accessory_enhanced_outfits = []
+
+    for outfit in scored_outfits:
+
+        enhanced_outfit = (
+            add_optional_accessory(
+                outfit,
+                wardrobe,
+                occasion
+            )
+        )
+
+        accessory_enhanced_outfits.append(
+            enhanced_outfit
+        )
+
+
+    scored_outfits = (
+        accessory_enhanced_outfits
     )
 
 

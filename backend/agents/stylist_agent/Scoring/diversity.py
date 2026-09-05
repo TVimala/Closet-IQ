@@ -19,12 +19,20 @@ FOOTWEAR_CATEGORIES = {
 }
 
 
-OUTERWEAR_CATEGORIES = {
-    "jacket",
-    "blazer",
-    "coat",
-    "cardigan",
-    "shrug"
+ACCESSORY_CATEGORIES = {
+    "accessory",
+    "belt",
+    "watch",
+    "sunglasses",
+    "scarf",
+    "dupatta",
+    "jewelry",
+    "necklace",
+    "earrings",
+    "bracelet",
+    "ring",
+    "hat",
+    "cap"
 }
 
 
@@ -98,10 +106,12 @@ def get_main_clothing_ids(outfit):
             .strip()
         )
 
-        # Ignore footwear
+        # Ignore footwear and accessories
         if (
             category in FOOTWEAR_CATEGORIES
             or wardrobe_group == "footwear"
+            or category in ACCESSORY_CATEGORIES
+            or wardrobe_group == "accessory"
         ):
             continue
 
@@ -161,6 +171,8 @@ def get_outfit_structure(outfit):
         if (
             category in FOOTWEAR_CATEGORIES
             or wardrobe_group == "footwear"
+            or category in ACCESSORY_CATEGORIES
+            or wardrobe_group == "accessory"
         ):
             continue
 
@@ -441,7 +453,7 @@ def is_near_duplicate(
 
 def select_diverse_outfits(
     scored_outfits,
-    limit=3,
+    limit=5,
     similarity_threshold=0.60
 ):
 
@@ -552,7 +564,7 @@ def calculate_diversity_summary(
 
         "diversity_target":
             min(
-                3,
+                5,
                 total_candidates
             )
     }

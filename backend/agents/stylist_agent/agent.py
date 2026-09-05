@@ -23,6 +23,72 @@ from .Scoring.color_compatibility import (
 
 
 # ============================================================
+# ACCESSORY CATEGORIES
+# ============================================================
+
+ACCESSORY_CATEGORIES = {
+    "accessory",
+    "belt",
+    "watch",
+    "sunglasses",
+    "scarf",
+    "dupatta",
+    "jewelry",
+    "necklace",
+    "earrings",
+    "bracelet",
+    "ring",
+    "hat",
+    "cap",
+}
+
+
+# ============================================================
+# COUNT ACCESSORIES IN OUTFIT
+# ============================================================
+
+def count_outfit_accessories(outfit):
+
+    count = 0
+
+    for item in outfit.get(
+        "items",
+        []
+    ):
+
+        category = str(
+            item.get(
+                "category",
+                ""
+            )
+        ).lower().strip()
+
+        wardrobe_group = str(
+            item.get(
+                "wardrobe_group",
+                ""
+            )
+        ).lower().strip()
+
+        item_type = str(
+            item.get(
+                "type",
+                ""
+            )
+        ).lower().strip()
+
+        if (
+            category in ACCESSORY_CATEGORIES
+            or wardrobe_group == "accessory"
+            or item_type in ACCESSORY_CATEGORIES
+        ):
+
+            count += 1
+
+    return count
+
+
+# ============================================================
 # GET OUTFIT ITEM IDS
 # ============================================================
 
@@ -30,7 +96,10 @@ def get_outfit_item_ids(outfit):
 
     return {
         item.get("id")
-        for item in outfit.get("items", [])
+        for item in outfit.get(
+            "items",
+            []
+        )
         if item.get("id")
     }
 
@@ -69,13 +138,6 @@ def is_same_outfit(
 
 # ============================================================
 # CHECK GENUINE DIFFERENCE
-# ============================================================
-#
-# Uses the SAME diversity logic already used by the
-# recommendation system.
-#
-# This prevents regeneration from simply changing shoes
-# while keeping the main outfit almost identical.
 # ============================================================
 
 def is_genuinely_different(
@@ -245,7 +307,7 @@ def run_stylist_agent(
 
         print(
             "Mode: SINGLE OUTFIT "
-            "(TOP 3)"
+            "(TOP 5)"
         )
 
 
@@ -385,7 +447,9 @@ def run_stylist_agent(
 
         weather,
 
-        learned_preferences
+        learned_preferences,
+
+        wardrobe_data
     )
 
     print(
@@ -395,24 +459,48 @@ def run_stylist_agent(
 
 
     # ========================================================
+    # ACCESSORY SUMMARY
+    # ========================================================
+
+    accessories_added = sum(
+
+        1
+
+        for outfit in scored_outfits
+
+        if outfit.get(
+            "accessory_added",
+            False
+        )
+    )
+
+    outfits_with_accessories = sum(
+
+        1
+
+        for outfit in scored_outfits
+
+        if count_outfit_accessories(
+            outfit
+        ) > 0
+    )
+
+    print(
+        f"Outfits With Accessories: "
+        f"{outfits_with_accessories}/"
+        f"{len(scored_outfits)}"
+    )
+
+    print(
+        f"Optional Accessories Newly Added: "
+        f"{accessories_added}/"
+        f"{len(scored_outfits)}"
+    )
+
+
+    # ========================================================
     # STEP 6
     # REGENERATION MODE
-    # ========================================================
-    #
-    # The complete candidate pool is already scored.
-    #
-    # Now:
-    #
-    # 1. Remove exact previous outfit.
-    # 2. Remove near-duplicates.
-    # 3. Keep genuinely different outfits.
-    # 4. Pick the highest-scoring one.
-    #
-    # This means regeneration does NOT randomly generate
-    # another outfit.
-    #
-    # It searches the existing dynamic outfit space for
-    # the best genuinely different recommendation.
     # ========================================================
 
     if regeneration_mode:
@@ -485,7 +573,6 @@ def run_stylist_agent(
             regenerated_candidates[0]
         )
 
-
         print(
             "\n==================================="
         )
@@ -516,6 +603,26 @@ def run_stylist_agent(
                 f" - {item.get('color', '')} "
                 f"{item.get('category', '')} "
                 f"({item.get('id', '')})"
+            )
+
+        print(
+            f"Accessories Present: "
+            f"{count_outfit_accessories(regenerated_outfit)}"
+        )
+
+        print(
+            f"Additional Accessory Added: "
+            f"{regenerated_outfit.get('accessory_added', False)}"
+        )
+
+        if regenerated_outfit.get(
+            "accessory_added",
+            False
+        ):
+
+            print(
+                f"Accessory Score: "
+                f"{regenerated_outfit.get('accessory_score', 0)}/100"
             )
 
         print(
@@ -612,8 +719,6 @@ def run_stylist_agent(
             "scored_outfits":
                 scored_outfits,
 
-            # Keep this available for compatibility.
-            # In weekly mode it contains the full pool.
             "outfits":
                 scored_outfits,
 
@@ -632,7 +737,7 @@ def run_stylist_agent(
 
             scored_outfits,
 
-            limit=3,
+            limit=5,
 
             similarity_threshold=0.60
         )
@@ -694,6 +799,36 @@ def run_stylist_agent(
                 f"({item.get('id', '')})"
             )
 
+        # ----------------------------------------------------
+        # ACCESSORY INFORMATION
+        # ----------------------------------------------------
+
+        accessory_count = (
+            count_outfit_accessories(
+                outfit
+            )
+        )
+
+        print(
+            f"Accessories Present: "
+            f"{accessory_count}/2"
+        )
+
+        # print(
+        #     f"Additional Accessory Added: "
+        #     f"{outfit.get('accessory_added', False)}"
+        # )
+
+        if outfit.get(
+            "accessory_added",
+            False
+        ):
+
+            print(
+                f"Accessory Score: "
+                f"{outfit.get('accessory_score', 0)}/100"
+            )
+
         print(
             f"Color Compatibility Score: "
             f"{outfit.get('color_compatibility_score', 0)}/100"
@@ -725,7 +860,7 @@ def run_stylist_agent(
         )
 
 
-    if len(diverse_outfits) < 3:
+    if len(diverse_outfits) < 5:
 
         print(
             "\nNote: Only "
