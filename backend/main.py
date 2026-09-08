@@ -5,6 +5,10 @@ from api.wardrobe import router as wardrobe_router
 
 from api.profile import router as profile_router
 
+from api.outfit import router as outfit_router
+
+from api.finance import router as finance_router
+
 
 app = FastAPI(
     title="WardrobeWise API",
@@ -25,6 +29,10 @@ app.add_middleware(
 app.include_router(wardrobe_router)
 
 app.include_router(profile_router)
+
+app.include_router(outfit_router)
+
+app.include_router(finance_router)
 
 @app.get("/")
 def root():

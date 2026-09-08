@@ -18,7 +18,9 @@ from agents.wardrobe_agent.agent import (
     remove_wardrobe_item
 )
 
-
+from schemas.wardrobe import (
+    WardrobeItemUpdate
+)
 router = APIRouter(
     prefix="/api/wardrobe",
     tags=["Wardrobe Agent"]
@@ -59,8 +61,19 @@ async def upload_clothing(
     db: Session = SessionLocal()
 
     try:
-        top_style = analysis["styles"][0]["label"]
-        top_occasion = analysis["occasions"][0]["label"]
+        styles = [
+        item["label"]
+        for item in analysis["styles"]
+        ]
+
+        occasions = [
+        item["label"]
+        for item in analysis["occasions"]
+        ]
+
+        seasons = [
+        analysis["season"]["label"]
+        ]
 
         wardrobe_item = WardrobeItem(
             user_id=user_id,
@@ -72,9 +85,9 @@ async def upload_clothing(
             color=analysis["color"]["label"],
             pattern=analysis["pattern"]["label"],
             fit=analysis["fit"]["label"],
-            style=top_style,
-            season=analysis["season"]["label"],
-            occasion=top_occasion,
+            styles=styles,
+            seasons=seasons,
+            occasions=occasions,
 
             is_available=True
         )
@@ -95,9 +108,9 @@ async def upload_clothing(
                 "color": wardrobe_item.color,
                 "pattern": wardrobe_item.pattern,
                 "fit": wardrobe_item.fit,
-                "style": wardrobe_item.style,
-                "occasion": wardrobe_item.occasion,
-                "season": wardrobe_item.season
+                "styles": wardrobe_item.styles,
+                "occasions": wardrobe_item.occasions,
+                "seasons": wardrobe_item.seasons
             }
         }
 
@@ -163,9 +176,9 @@ def update_wardrobe(
     color: str = None,
     pattern: str = None,
     fit: str = None,
-    style: str = None,
-    occasion: str = None,
-    season: str = None,
+    styles: list[str] = None,
+    occasions: list[str] = None,
+    seasons: list[str] = None,
     # brand: str = None,
     condition: str = None,
     is_available: bool = None
@@ -178,9 +191,9 @@ def update_wardrobe(
         color=color,
         pattern=pattern,
         fit=fit,
-        style=style,
-        occasion=occasion,
-        season=season,
+        styles=styles,
+        occasions=occasions,
+        seasons=seasons,
         # brand=brand,
         condition=condition,
         is_available=is_available

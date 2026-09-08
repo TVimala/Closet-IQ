@@ -149,28 +149,35 @@ def analyze_clothing(image_path):
     # -------------------------
 
     category_labels = [
-        "t-shirt",
-        "shirt",
-        "blouse",
-        "dress",
-        "jeans",
-        "trousers",
-        "skirt",
-        "shorts",
-        "jacket",
-        "coat",
-        "hoodie",
-        "sweater",
-        "kurta",
-        "saree",
-        "shoes",
-        "sneakers",
-        "sandals",
-        "bag",
-        "hat",
-        "frock",
-        "blazer"
-    ]
+    "t-shirt",
+    "shirt",
+    "blouse",
+
+    "dress",
+    "frock",
+
+    "jeans",
+    "trousers",
+    "skirt",
+    "shorts",
+
+    "jacket",
+    "coat",
+    "hoodie",
+    "sweater",
+    "blazer",
+
+    "kurta",
+    "kurti",
+    "saree",
+
+    "shoes",
+    "sneakers",
+    "sandals",
+
+    "bag",
+    "hat"
+]
 
     category = get_top_prediction(
         image,

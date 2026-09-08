@@ -20,6 +20,9 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 from sqlalchemy.orm import relationship
 
+# ============================================================
+# USER MODELS
+# ============================================================
 
 class User(Base):
     __tablename__ = "users"
@@ -56,6 +59,9 @@ class User(Base):
         onupdate=func.now()
     )
 
+# ============================================================
+# WARDROBE AGENT MODELS
+# ============================================================
 
 class WardrobeItem(Base):
     __tablename__ = "wardrobe_items"
@@ -112,19 +118,19 @@ class WardrobeItem(Base):
         nullable=True
     )
 
-    style = Column(
-        String(100),
-        nullable=True
+    styles = Column(
+    ARRAY(String(100)),
+    nullable=True
     )
 
-    season = Column(
-        String(100),
-        nullable=True
+    seasons = Column(
+    ARRAY(String(100)),
+    nullable=True
     )
 
-    occasion = Column(
-        String(100),
-        nullable=True
+    occasions = Column(
+    ARRAY(String(100)),
+    nullable=True
     )
 
     # brand = Column(
@@ -173,6 +179,10 @@ class WardrobeItem(Base):
         server_default=func.now(),
         onupdate=func.now()
     )
+
+# ============================================================
+# PROFILE AGENT MODELS
+# ============================================================
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -249,6 +259,269 @@ class UserCurrentPreference(Base):
     occasions = Column(ARRAY(String(100)))
 
     comfort_weight = Column(Integer)
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+# ============================================================
+# FINANCE AGENT MODELS
+# ============================================================
+
+class FinancialProfile(Base):
+    __tablename__ = "financial_profiles"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False
+    )
+
+    monthly_salary = Column(
+        Numeric(12, 2),
+        nullable=False
+    )
+
+    currency = Column(
+        String(10),
+        nullable=False,
+        default="INR"
+    )
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+
+class Budget(Base):
+    __tablename__ = "budgets"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    category = Column(
+        String(100),
+        nullable=False,
+        default="CLOTHING"
+    )
+
+    monthly_limit = Column(
+        Numeric(12, 2),
+        nullable=False
+    )
+
+    month = Column(
+        Integer,
+        nullable=False
+    )
+
+    year = Column(
+        Integer,
+        nullable=False
+    )
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+
+# ============================================================
+# PURCHASE HISTORY MODELS
+# ============================================================
+
+class PurchaseHistory(Base):
+    __tablename__ = "purchase_history"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    wardrobe_item_id = Column(
+        Integer,
+        ForeignKey("wardrobe_items.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    purchase_price = Column(
+        Numeric(12, 2),
+        nullable=False
+    )
+
+    purchase_date = Column(
+        Date,
+        nullable=False,
+        server_default=func.current_date()
+    )
+
+    brand = Column(
+        String(100),
+        nullable=True
+    )
+
+    merchant = Column(
+        String(150),
+        nullable=True
+    )
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+
+# ============================================================
+# PENDING PURCHASE MODEL
+# ============================================================
+
+class PendingPurchase(Base):
+    __tablename__ = "pending_purchases"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    # --------------------------------------------------------
+    # IMAGE
+    # --------------------------------------------------------
+
+    image_url = Column(
+        Text,
+        nullable=True
+    )
+
+    # --------------------------------------------------------
+    # CLOTHING ANALYSIS
+    # --------------------------------------------------------
+
+    category = Column(
+        String(100),
+        nullable=True
+    )
+
+    color = Column(
+        String(100),
+        nullable=True
+    )
+
+    pattern = Column(
+        String(100),
+        nullable=True
+    )
+
+    fit = Column(
+        String(100),
+        nullable=True
+    )
+
+    styles = Column(
+        ARRAY(String(100)),
+        nullable=True
+    )
+
+    occasions = Column(
+        ARRAY(String(100)),
+        nullable=True
+    )
+
+    seasons = Column(
+        ARRAY(String(100)),
+        nullable=True
+    )
+
+    # --------------------------------------------------------
+    # EMBEDDING
+    # --------------------------------------------------------
+
+    embedding = Column(
+        Vector(512),
+        nullable=True
+    )
+
+    # --------------------------------------------------------
+    # PURCHASE INFORMATION
+    # --------------------------------------------------------
+
+    purchase_price = Column(
+        Numeric(12, 2),
+        nullable=False
+    )
+
+    brand = Column(
+        String(100),
+        nullable=True
+    )
+
+    merchant = Column(
+        String(150),
+        nullable=True
+    )
+
+    # --------------------------------------------------------
+    # STATUS
+    # --------------------------------------------------------
+
+    status = Column(
+        String(30),
+        nullable=False,
+        default="ANALYZED"
+    )
+
+    # --------------------------------------------------------
+    # TIMESTAMPS
+    # --------------------------------------------------------
 
     created_at = Column(
         TIMESTAMP,
