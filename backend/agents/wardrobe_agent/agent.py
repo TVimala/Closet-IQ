@@ -27,9 +27,9 @@ def get_wardrobe(user_id):
                 "color": item.color,
                 "pattern": item.pattern,
                 "fit": item.fit,
-                "style": item.style,
-                "occasion": item.occasion,
-                "season": item.season
+                "styles": item.styles,
+                "occasions": item.occasions,
+                "seasons": item.seasons
             })
 
         return wardrobe
@@ -65,17 +65,17 @@ def search_wardrobe(
 
         if style:
             query = query.filter(
-                WardrobeItem.style.ilike(f"%{style}%")
+                WardrobeItem.styles.any(style)
             )
 
         if occasion:
             query = query.filter(
-                WardrobeItem.occasion.ilike(f"%{occasion}%")
+                WardrobeItem.occasions.any(occasion)
             )
 
         if season:
             query = query.filter(
-                WardrobeItem.season.ilike(f"%{season}%")
+                WardrobeItem.seasons.any(season)
             )
 
         items = query.all()
@@ -91,9 +91,9 @@ def search_wardrobe(
                 "color": item.color,
                 "pattern": item.pattern,
                 "fit": item.fit,
-                "style": item.style,
-                "occasion": item.occasion,
-                "season": item.season
+                "styles": item.styles,
+                "occasions": item.occasions,
+                "seasons": item.seasons
             })
 
         return results
@@ -108,9 +108,9 @@ def update_wardrobe_item(
     color=None,
     pattern=None,
     fit=None,
-    style=None,
-    occasion=None,
-    season=None,
+    styles=None,
+    occasions=None,
+    seasons=None,
     brand=None,
     condition=None,
     is_available=None
@@ -141,14 +141,14 @@ def update_wardrobe_item(
         if fit is not None:
             item.fit = fit
 
-        if style is not None:
-            item.style = style
+        if styles is not None:
+            item.styles = styles
 
-        if occasion is not None:
-            item.occasion = occasion
+        if occasions is not None:
+            item.occasions = occasions
 
-        if season is not None:
-            item.season = season
+        if seasons is not None:
+            item.seasons = seasons
 
         if brand is not None:
             item.brand = brand
@@ -173,10 +173,10 @@ def update_wardrobe_item(
             "color": item.color,
             "pattern": item.pattern,
             "fit": item.fit,
-            "style": item.style,
-            "occasion": item.occasion,
-            "season": item.season,
-            "brand": item.brand,
+            "styles": item.styles,
+            "occasions": item.occasions,
+            "seasons": item.seasons,
+            # "brand": item.brand,
             "condition": item.condition,
             "is_available": item.is_available
         }
@@ -305,9 +305,9 @@ def find_similar_items(
                     color,
                     pattern,
                     fit,
-                    style,
-                    occasion,
-                    season,
+                    styles,
+                    occasions,
+                    seasons,
 
                     1 - (embedding <=> :embedding) AS similarity
 
@@ -343,9 +343,9 @@ def find_similar_items(
                 "color": row["color"],
                 "pattern": row["pattern"],
                 "fit": row["fit"],
-                "style": row["style"],
-                "occasion": row["occasion"],
-                "season": row["season"],
+                "styles": row["styles"],
+                "occasions": row["occasions"],
+                "seasons": row["seasons"],
                 "similarity": float(row["similarity"])
             })
 
