@@ -29,7 +29,23 @@ def get_wardrobe(user_id):
                 "fit": item.fit,
                 "styles": item.styles,
                 "occasions": item.occasions,
-                "seasons": item.seasons
+                "seasons": item.seasons,
+                # ------------------------------------------------
+                # Additive fields (kept alongside the original keys
+                # above so nothing existing breaks). Needed by the
+                # Orchestrator to build StylistInput.WardrobeItem.
+                # ------------------------------------------------
+                "condition": item.condition,
+                "is_available": item.is_available,
+                "usage_count": item.usage_count,
+                "last_worn_at": item.last_worn_at,
+                "created_at": item.created_at,
+                "updated_at": item.updated_at,
+                "embedding": (
+                    list(item.embedding)
+                    if item.embedding is not None
+                    else None
+                )
             })
 
         return wardrobe

@@ -1,18 +1,25 @@
 # ============================================================
 # OUTFIT HISTORY
 # STEP 12
+#
+# NOTE:
+# Originally this module stored outfit history in an in-memory
+# Python list (OUTFIT_HISTORY = []), explicitly marked as
+# temporary ("Later this will be replaced by a database.").
+#
+# It is now backed by the OutfitHistoryDB table (see
+# database/models.py) so history survives server restarts and
+# is visible to the Notification scheduler.
+#
+# All function names and signatures below are preserved exactly
+# as before so existing callers (Feedback Agent, Orchestrator)
+# do not need to change.
 # ============================================================
 
 from datetime import datetime
 
-
-# ============================================================
-# TEMPORARY IN-MEMORY STORAGE
-#
-# Later this will be replaced by a database.
-# ============================================================
-
-OUTFIT_HISTORY = []
+from database.connection import SessionLocal
+from database.models import OutfitHistoryDB
 
 
 # ============================================================
@@ -51,7 +58,7 @@ def get_item_ids(
         if item_id:
 
             item_ids.append(
-                item_id
+                str(item_id)
             )
 
     return item_ids
@@ -93,13 +100,20 @@ def create_outfit_history_record(
 
 
     # --------------------------------------------------------
-    # CREATE RECORD
+    # CREATE RECORD (in-memory representation, not yet saved)
     # --------------------------------------------------------
+
+    db = SessionLocal()
+
+    try:
+        count = db.query(OutfitHistoryDB).count()
+    finally:
+        db.close()
 
     history_record = {
 
         "history_id":
-            f"H{len(OUTFIT_HISTORY) + 1:04d}",
+            f"H{count + 1:04d}",
 
         "user_id":
             user_id,
@@ -140,25 +154,20 @@ def history_record_exists(
     date_worn
 ):
 
-    for record in OUTFIT_HISTORY:
+    db = SessionLocal()
 
-        if (
+    try:
 
-            record["user_id"] == user_id
+        existing = db.query(OutfitHistoryDB).filter(
+            OutfitHistoryDB.user_id == user_id,
+            OutfitHistoryDB.outfit_id == str(outfit_id),
+            OutfitHistoryDB.date_worn == date_worn
+        ).first()
 
-            and
+        return existing is not None
 
-            record["outfit_id"] == outfit_id
-
-            and
-
-            record["date_worn"] == date_worn
-
-        ):
-
-            return True
-
-    return False
+    finally:
+        db.close()
 
 
 # ============================================================
@@ -225,12 +234,35 @@ def record_outfit_worn(
 
 
     # --------------------------------------------------------
-    # SAVE RECORD
+    # SAVE RECORD TO DATABASE
     # --------------------------------------------------------
 
-    OUTFIT_HISTORY.append(
-        record
-    )
+    db = SessionLocal()
+
+    try:
+
+        db_record = OutfitHistoryDB(
+            history_id=record["history_id"],
+            user_id=record["user_id"],
+            outfit_id=str(record["outfit_id"]),
+            item_ids=record["item_ids"],
+            occasion=record["occasion"],
+            date_worn=record["date_worn"],
+            source=record["source"]
+        )
+
+        db.add(db_record)
+        db.commit()
+        db.refresh(db_record)
+
+        record["history_id"] = db_record.history_id
+
+    except Exception as e:
+        db.rollback()
+        raise e
+
+    finally:
+        db.close()
 
 
     return {
@@ -255,14 +287,38 @@ def get_user_outfit_history(
     user_id
 ):
 
-    return [
+    db = SessionLocal()
 
-        record
+    try:
 
-        for record in OUTFIT_HISTORY
+        records = db.query(OutfitHistoryDB).filter(
+            OutfitHistoryDB.user_id == user_id
+        ).all()
 
-        if record["user_id"] == user_id
-    ]
+        return [
+            {
+                "history_id": record.history_id,
+                "user_id": record.user_id,
+                "outfit_id": record.outfit_id,
+                "item_ids": record.item_ids or [],
+                "occasion": record.occasion,
+                "date_worn": (
+                    record.date_worn.isoformat()
+                    if hasattr(record.date_worn, "isoformat")
+                    else record.date_worn
+                ),
+                "source": record.source,
+                "created_at": (
+                    record.created_at.isoformat()
+                    if record.created_at
+                    else None
+                )
+            }
+            for record in records
+        ]
+
+    finally:
+        db.close()
 
 
 # ============================================================
@@ -362,9 +418,87 @@ def get_item_wear_count(
 
     for record in user_history:
 
-        if item_id in record["item_ids"]:
+        if str(item_id) in record["item_ids"]:
 
             wear_count += 1
 
 
     return wear_count
+
+
+# ============================================================
+# OUTFIT GENERATED / WORN TODAY HELPERS
+#
+# New helpers (additive) used by the Notification Agent flow
+# to check "was an outfit generated today" / "has the user
+# marked anything worn today" without duplicating DB logic
+# inside the Orchestrator or the scheduler.
+# ============================================================
+
+def has_outfit_worn_today(user_id, today=None):
+
+    if today is None:
+        today = datetime.now().date()
+
+    history = get_user_outfit_history(user_id)
+
+    for record in history:
+        if (
+            str(record["date_worn"]) == str(today)
+            and record["source"] == "confirmed_worn"
+        ):
+            return True
+
+    return False
+
+
+def log_outfit_generated(user_id, outfit_id, items, occasion=None):
+    """
+    Records that an outfit was generated today (source=
+    "generated_only"). This is separate from record_outfit_worn
+    (source="confirmed_worn"), which is only written when the
+    user explicitly says they wore it. The distinction is what
+    lets the Notification Agent tell the difference between
+    "generated" and "worn" per the project spec.
+    """
+
+    today = datetime.now().date().isoformat()
+
+    db = SessionLocal()
+
+    try:
+        count = db.query(OutfitHistoryDB).count()
+
+        record = OutfitHistoryDB(
+            history_id=f"H{count + 1:04d}",
+            user_id=user_id,
+            outfit_id=str(outfit_id),
+            item_ids=get_item_ids(items),
+            occasion=occasion,
+            date_worn=today,
+            source="generated_only"
+        )
+
+        db.add(record)
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        raise e
+
+    finally:
+        db.close()
+
+
+def has_outfit_generated_today(user_id, today=None):
+
+    if today is None:
+        today = datetime.now().date()
+
+    history = get_user_outfit_history(user_id)
+
+    for record in history:
+        if str(record["date_worn"]) == str(today):
+            return True
+
+    return False

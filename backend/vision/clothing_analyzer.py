@@ -19,6 +19,99 @@ tokenizer = open_clip.get_tokenizer(
 
 model.eval()
 
+# ============================================================
+# LABEL NORMALIZATION
+#
+# FashionCLIP classifies better against natural-sounding prompts
+# ("college outfit", "classic clothing") than bare words, so the
+# label lists below stay verbose. But that same text was going
+# straight into the database, and the stylist agent's scoring
+# code (occasion.py, weather.py, preferences.py) does exact
+# string matching against short canonical words like "college"
+# and "classic". These maps translate CLIP's prediction back to
+# the canonical vocabulary BEFORE it's returned/saved.
+# ============================================================
+
+COLOR_LABEL_MAP = {
+    "white clothing": "white",
+    "black clothing": "black",
+    "gray clothing": "gray",
+    "red clothing": "red",
+    "blue clothing": "blue",
+    "green clothing": "green",
+    "yellow clothing": "yellow",
+    "orange clothing": "orange",
+    "pink clothing": "pink",
+    "purple clothing": "purple",
+    "brown clothing": "brown",
+    "beige clothing": "beige",
+    "cream clothing": "cream",
+}
+
+PATTERN_LABEL_MAP = {
+    "plain clothing": "plain",
+    "striped clothing": "striped",
+    "checked clothing": "checked",
+    "floral clothing": "floral",
+    "printed clothing": "printed",
+    "polka dot clothing": "polka dot",
+    "patterned clothing": "patterned",
+}
+
+STYLE_LABEL_MAP = {
+    "casual clothing": "casual",
+    "formal clothing": "formal",
+    # "smart casual" has no matching key anywhere in
+    # OCCASION_STYLE_SCORES yet, so it's folded into "casual"
+    # rather than silently scoring zero everywhere.
+    "smart casual clothing": "casual",
+    "sporty clothing": "sporty",
+    "minimal clothing": "minimal",
+    "elegant clothing": "elegant",
+    # same reasoning: streetwear isn't a scoring key, closest
+    # existing concept is trendy.
+    "streetwear clothing": "trendy",
+    "classic clothing": "classic",
+    "trendy clothing": "trendy",
+}
+
+FIT_LABEL_MAP = {
+    "relaxed fit clothing": "relaxed",
+    "regular fit clothing": "regular",
+    "oversized clothing": "oversized",
+    "fitted clothing": "fitted",
+    "slim fit clothing": "slim",
+}
+
+OCCASION_LABEL_MAP = {
+    "casual everyday clothing": "casual",
+    "college outfit": "college",
+    "office wear": "office",
+    "party outfit": "party",
+    "date night outfit": "date",
+    "wedding guest outfit": "wedding",
+    "traditional wedding outfit": "wedding",
+    "beach vacation outfit": "beach",
+    "summer casual outfit": "casual",
+    "formal event outfit": "formal",
+}
+
+SEASON_LABEL_MAP = {
+    "summer clothing": "summer",
+    "winter clothing": "winter",
+    "spring clothing": "spring",
+    "autumn clothing": "autumn",
+    "all season clothing": "all",
+}
+
+
+def normalize_label(label: str, label_map: dict) -> str:
+    # .get(..., label) is a safe fallback: if a label somehow
+    # isn't in the map, keep the original text instead of losing
+    # data silently.
+    return label_map.get(label, label)
+
+
 def generate_embedding(image_path):
 
     image = preprocess(
@@ -91,7 +184,7 @@ def get_predictions(image, labels):
 # GET SINGLE BEST RESULT
 # -------------------------
 
-def get_top_prediction(image, labels):
+def get_top_prediction(image, labels, label_map=None):
 
     results = get_predictions(
         image,
@@ -99,6 +192,9 @@ def get_top_prediction(image, labels):
     )
 
     label, score = results[0]
+
+    if label_map is not None:
+        label = normalize_label(label, label_map)
 
     return {
         "label": label,
@@ -113,7 +209,8 @@ def get_top_prediction(image, labels):
 def get_top_predictions(
     image,
     labels,
-    top_n=3
+    top_n=3,
+    label_map=None
 ):
 
     results = get_predictions(
@@ -124,6 +221,9 @@ def get_top_predictions(
     predictions = []
 
     for label, score in results[:top_n]:
+
+        if label_map is not None:
+            label = normalize_label(label, label_map)
 
         predictions.append({
             "label": label,
@@ -145,39 +245,39 @@ def analyze_clothing(image_path):
     ).unsqueeze(0)
 
     # -------------------------
-    # CATEGORY
+    # CATEGORY (already clean, no map needed)
     # -------------------------
 
     category_labels = [
-    "t-shirt",
-    "shirt",
-    "blouse",
+        "t-shirt",
+        "shirt",
+        "blouse",
 
-    "dress",
-    "frock",
+        "dress",
+        "frock",
 
-    "jeans",
-    "trousers",
-    "skirt",
-    "shorts",
+        "jeans",
+        "trousers",
+        "skirt",
+        "shorts",
 
-    "jacket",
-    "coat",
-    "hoodie",
-    "sweater",
-    "blazer",
+        "jacket",
+        "coat",
+        "hoodie",
+        "sweater",
+        "blazer",
 
-    "kurta",
-    "kurti",
-    "saree",
+        "kurta",
+        "kurti",
+        "saree",
 
-    "shoes",
-    "sneakers",
-    "sandals",
+        "shoes",
+        "sneakers",
+        "sandals",
 
-    "bag",
-    "hat"
-]
+        "bag",
+        "hat"
+    ]
 
     category = get_top_prediction(
         image,
@@ -206,7 +306,8 @@ def analyze_clothing(image_path):
 
     color = get_top_prediction(
         image,
-        color_labels
+        color_labels,
+        label_map=COLOR_LABEL_MAP
     )
 
     # -------------------------
@@ -225,7 +326,8 @@ def analyze_clothing(image_path):
 
     pattern = get_top_prediction(
         image,
-        pattern_labels
+        pattern_labels,
+        label_map=PATTERN_LABEL_MAP
     )
 
     # -------------------------
@@ -247,7 +349,8 @@ def analyze_clothing(image_path):
     styles = get_top_predictions(
         image,
         style_labels,
-        top_n=3
+        top_n=3,
+        label_map=STYLE_LABEL_MAP
     )
 
     # -------------------------
@@ -264,7 +367,8 @@ def analyze_clothing(image_path):
 
     fit = get_top_prediction(
         image,
-        fit_labels
+        fit_labels,
+        label_map=FIT_LABEL_MAP
     )
 
     # -------------------------
@@ -273,21 +377,22 @@ def analyze_clothing(image_path):
 
     occasion_labels = [
         "casual everyday clothing",
-    "college outfit",
-    "office wear",
-    "party outfit",
-    "date night outfit",
-    "wedding guest outfit",
-    "traditional wedding outfit",
-    "beach vacation outfit",
-    "summer casual outfit",
-    "formal event outfit"
+        "college outfit",
+        "office wear",
+        "party outfit",
+        "date night outfit",
+        "wedding guest outfit",
+        "traditional wedding outfit",
+        "beach vacation outfit",
+        "summer casual outfit",
+        "formal event outfit"
     ]
 
     occasions = get_top_predictions(
         image,
         occasion_labels,
-        top_n=3
+        top_n=3,
+        label_map=OCCASION_LABEL_MAP
     )
 
     # -------------------------
@@ -304,7 +409,8 @@ def analyze_clothing(image_path):
 
     season = get_top_prediction(
         image,
-        season_labels
+        season_labels,
+        label_map=SEASON_LABEL_MAP
     )
 
     embedding = generate_embedding(image_path)

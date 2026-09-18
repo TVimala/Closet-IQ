@@ -18,7 +18,7 @@ from agents.wardrobe_agent.agent import (
     remove_wardrobe_item
 )
 
-from schemas.wardrobe import (
+from schemas.wardrobe_schema import (
     WardrobeItemUpdate
 )
 router = APIRouter(

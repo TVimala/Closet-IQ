@@ -414,6 +414,110 @@ class PurchaseHistory(Base):
     )
 
 
+
+
+# ============================================================
+# OUTFIT HISTORY MODEL
+#
+# Replaces the previous in-memory OUTFIT_HISTORY list used by
+# agents/feedback_agent/outfit_history.py so history survives
+# restarts and is visible to the Notification scheduler.
+# ============================================================
+
+class OutfitHistoryDB(Base):
+    __tablename__ = "outfit_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    history_id = Column(String(20), unique=True, nullable=False)
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    outfit_id = Column(String(100), nullable=False)
+
+    item_ids = Column(ARRAY(String(50)), nullable=True)
+
+    occasion = Column(String(100), nullable=True)
+
+    date_worn = Column(Date, nullable=False)
+
+    source = Column(String(50), nullable=False, default="app_generated")
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+
+# ============================================================
+# FEEDBACK RECORD MODEL
+#
+# Stores raw feedback events so learned preferences can be
+# recomputed at any time (survives restarts).
+# ============================================================
+
+class FeedbackRecordDB(Base):
+    __tablename__ = "feedback_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    outfit_id = Column(String(100), nullable=False)
+
+    feedback_type = Column(String(50), nullable=False)
+
+    reason = Column(String(100), nullable=True)
+
+    rating = Column(Integer, nullable=True)
+
+    comment = Column(Text, nullable=True)
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+
+# ============================================================
+# NOTIFICATION MODEL
+# ============================================================
+
+class NotificationDB(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(
+        String(50),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    notification_type = Column(String(50), nullable=False)
+
+    title = Column(String(200), nullable=True)
+
+    message = Column(Text, nullable=True)
+
+    created_at = Column(
+        TIMESTAMP,
+        server_default=func.now()
+    )
+
+    scheduled_for = Column(Date, nullable=True)
+
+    read = Column(Boolean, default=False, nullable=False)
+
+    delivery_status = Column(String(30), default="delivered", nullable=False)
 # ============================================================
 # PENDING PURCHASE MODEL
 # ============================================================

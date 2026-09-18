@@ -1,4 +1,4 @@
-from agents.wardrobe_agent.agent import find_similar_items
+from backend.agents.wardrobe_agent.agent import find_similar_items
 
 
 result = find_similar_items(

@@ -84,11 +84,32 @@ class UserPreferences(BaseModel):
 
 class OutfitRequest(BaseModel):
 
+    user_id: str
+
     occasion: str
 
     latitude: float
 
     longitude: float
+
+
+# ============================================================
+# REGENERATION REQUEST
+# ============================================================
+
+class RegenerationRequest(BaseModel):
+
+    user_id: str
+
+    occasion: str
+
+    latitude: float
+
+    longitude: float
+
+    previous_outfit: Dict[str, Any]
+
+    regeneration_reason: Optional[str] = None
 
 
 # ============================================================
@@ -174,6 +195,8 @@ class WeeklyDayPlan(BaseModel):
 # ============================================================
 
 class WeeklyOutfitRequest(BaseModel):
+
+    user_id: str
 
     start_date: date
 

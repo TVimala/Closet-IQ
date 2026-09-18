@@ -1,3 +1,13 @@
 fastapi
 uvicorn
 requests
+sqlalchemy
+psycopg2-binary
+pgvector
+python-dotenv
+pydantic
+apscheduler
+open-clip-torch
+torch
+pillow
+python-multipart

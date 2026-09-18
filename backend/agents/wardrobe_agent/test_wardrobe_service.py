@@ -1,4 +1,4 @@
-from agents.wardrobe_agent.agent import (
+from backend.agents.wardrobe_agent.agent import (
     get_wardrobe,
     search_wardrobe,
     update_wardrobe_item,
