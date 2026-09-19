@@ -3,9 +3,9 @@ import torch
 from PIL import Image
 
 
-# -------------------------
+# ============================================================
 # LOAD FASHIONCLIP MODEL
-# -------------------------
+# ============================================================
 
 print("Loading FashionCLIP model...")
 
@@ -19,159 +19,428 @@ tokenizer = open_clip.get_tokenizer(
 
 model.eval()
 
+
 # ============================================================
-# LABEL NORMALIZATION
+# CATEGORY NORMALIZATION
 #
-# FashionCLIP classifies better against natural-sounding prompts
-# ("college outfit", "classic clothing") than bare words, so the
-# label lists below stay verbose. But that same text was going
-# straight into the database, and the stylist agent's scoring
-# code (occasion.py, weather.py, preferences.py) does exact
-# string matching against short canonical words like "college"
-# and "classic". These maps translate CLIP's prediction back to
-# the canonical vocabulary BEFORE it's returned/saved.
+# FashionCLIP receives natural-language fashion descriptions.
+# Closet-IQ receives canonical category names that match
+# services/wardrobe_intelligence.py exactly.
+# ============================================================
+
+CATEGORY_LABEL_MAP = {
+
+    # --------------------------------------------------------
+    # UPPER BODY
+    # --------------------------------------------------------
+
+    "a fashion top": "top",
+    "a t-shirt": "tshirt",
+    "a shirt": "shirt",
+    "a blouse": "blouse",
+    "a crop top": "crop_top",
+    "a tank top": "tank_top",
+    "a polo shirt": "polo",
+    "a sweater": "sweater",
+    "a hoodie": "hoodie",
+
+    # --------------------------------------------------------
+    # LOWER BODY
+    # --------------------------------------------------------
+
+    "a pair of jeans": "jeans",
+    "a pair of trousers": "trousers",
+    "a pair of pants": "pants",
+    "a pair of shorts": "shorts",
+    "a skirt": "skirt",
+    "a pair of joggers": "joggers",
+    "a pair of leggings": "leggings",
+
+    # --------------------------------------------------------
+    # ONE PIECE
+    # --------------------------------------------------------
+
+    "a dress": "dress",
+    "a jumpsuit": "jumpsuit",
+    "a romper": "romper",
+    "a co-ord set": "co_ord_set",
+
+    # --------------------------------------------------------
+    # OUTER LAYER
+    # --------------------------------------------------------
+
+    "a jacket": "jacket",
+    "a blazer": "blazer",
+    "a coat": "coat",
+    "a cardigan": "cardigan",
+    "a shrug": "shrug",
+
+    # --------------------------------------------------------
+    # TRADITIONAL / ETHNIC
+    # --------------------------------------------------------
+
+    "an Indian saree": "saree",
+    "an Indian kurti": "kurti",
+    "an Indian lehenga": "lehenga",
+    "an Indian anarkali dress": "anarkali",
+    "an Indian salwar suit": "salwar_suit",
+    "an Indian ethnic clothing set": "ethnic_set",
+
+    # --------------------------------------------------------
+    # SWIMWEAR
+    # --------------------------------------------------------
+
+    "a bikini": "bikini",
+    "a swimsuit": "swimsuit",
+    "swimwear": "swimwear",
+
+    # --------------------------------------------------------
+    # SPECIAL LAYERS
+    # --------------------------------------------------------
+
+    "a fashion cover-up": "cover_up",
+    "a beach cover-up": "beach_coverup",
+    "a kimono": "kimono",
+
+    # --------------------------------------------------------
+    # FOOTWEAR
+    # --------------------------------------------------------
+
+    "a pair of shoes": "shoes",
+    "a pair of sneakers": "sneakers",
+    "a pair of high heels": "heels",
+    "a pair of sandals": "sandals",
+    "a pair of flat shoes": "flats",
+    "a pair of boots": "boots",
+    "a pair of slippers": "slippers",
+    "a pair of loafers": "loafers",
+
+    # --------------------------------------------------------
+    # BAGS
+    #
+    # Wardrobe Intelligence groups all of these under bag.
+    # We store canonical "bag" so downstream logic is simple.
+    # --------------------------------------------------------
+
+    "a fashion bag": "bag",
+    "a handbag": "bag",
+    "a tote bag": "bag",
+    "a clutch bag": "bag",
+    "a crossbody bag": "bag",
+    "a backpack": "bag",
+
+    # --------------------------------------------------------
+    # STYLE ACCESSORIES
+    # --------------------------------------------------------
+
+    "a fashion belt": "belt",
+    "a wrist watch": "watch",
+    "a pair of sunglasses": "sunglasses",
+
+    # --------------------------------------------------------
+    # ETHNIC ACCESSORIES
+    # --------------------------------------------------------
+
+    "an Indian dupatta": "dupatta",
+    "a fashion scarf": "scarf",
+
+    # --------------------------------------------------------
+    # JEWELRY
+    # --------------------------------------------------------
+
+    "a necklace": "necklace",
+    "a pair of earrings": "earrings",
+    "a bracelet": "bracelet",
+    "a ring": "ring",
+}
+
+
+# ============================================================
+# COLOR NORMALIZATION
 # ============================================================
 
 COLOR_LABEL_MAP = {
-    "white clothing": "white",
-    "black clothing": "black",
-    "gray clothing": "gray",
-    "red clothing": "red",
-    "blue clothing": "blue",
-    "green clothing": "green",
-    "yellow clothing": "yellow",
-    "orange clothing": "orange",
-    "pink clothing": "pink",
-    "purple clothing": "purple",
-    "brown clothing": "brown",
-    "beige clothing": "beige",
-    "cream clothing": "cream",
+
+    "white clothing or accessory": "white",
+    "black clothing or accessory": "black",
+    "gray clothing or accessory": "gray",
+    "silver clothing or accessory": "silver",
+
+    "red clothing or accessory": "red",
+    "maroon clothing or accessory": "maroon",
+    "burgundy clothing or accessory": "burgundy",
+
+    "blue clothing or accessory": "blue",
+    "navy blue clothing or accessory": "navy",
+    "light blue clothing or accessory": "light_blue",
+
+    "green clothing or accessory": "green",
+    "olive green clothing or accessory": "olive",
+    "emerald green clothing or accessory": "emerald",
+
+    "yellow clothing or accessory": "yellow",
+    "mustard clothing or accessory": "mustard",
+    "gold clothing or accessory": "gold",
+
+    "orange clothing or accessory": "orange",
+    "peach clothing or accessory": "peach",
+
+    "pink clothing or accessory": "pink",
+    "blush pink clothing or accessory": "blush",
+
+    "purple clothing or accessory": "purple",
+    "lavender clothing or accessory": "lavender",
+
+    "brown clothing or accessory": "brown",
+    "tan clothing or accessory": "tan",
+
+    "beige clothing or accessory": "beige",
+    "cream clothing or accessory": "cream",
+    "ivory clothing or accessory": "ivory",
 }
 
+
+# ============================================================
+# PATTERN NORMALIZATION
+# ============================================================
+
 PATTERN_LABEL_MAP = {
-    "plain clothing": "plain",
+
+    "plain solid clothing": "solid",
     "striped clothing": "striped",
     "checked clothing": "checked",
     "floral clothing": "floral",
     "printed clothing": "printed",
-    "polka dot clothing": "polka dot",
+    "polka dot clothing": "polka_dot",
+    "embroidered clothing": "embroidered",
+    "block print clothing": "block_print",
+    "ribbed clothing": "ribbed",
     "patterned clothing": "patterned",
 }
 
+
+# ============================================================
+# STYLE NORMALIZATION
+# ============================================================
+
 STYLE_LABEL_MAP = {
-    "casual clothing": "casual",
-    "formal clothing": "formal",
-    # "smart casual" has no matching key anywhere in
-    # OCCASION_STYLE_SCORES yet, so it's folded into "casual"
-    # rather than silently scoring zero everywhere.
-    "smart casual clothing": "casual",
-    "sporty clothing": "sporty",
-    "minimal clothing": "minimal",
-    "elegant clothing": "elegant",
-    # same reasoning: streetwear isn't a scoring key, closest
-    # existing concept is trendy.
-    "streetwear clothing": "trendy",
-    "classic clothing": "classic",
-    "trendy clothing": "trendy",
+
+    "casual fashion": "casual",
+    "comfortable fashion": "comfortable",
+    "minimal fashion": "minimal",
+    "classic fashion": "classic",
+
+    "formal fashion": "formal",
+    "elegant fashion": "elegant",
+
+    "feminine fashion": "feminine",
+    "romantic fashion": "romantic",
+
+    "trendy fashion": "trendy",
+    "bold fashion": "bold",
+
+    "bohemian fashion": "boho",
+
+    "traditional Indian fashion": "traditional",
+    "ethnic Indian fashion": "ethnic",
+
+    "playful fashion": "playful",
+    "cozy fashion": "cozy",
+
+    "vacation fashion": "vacation",
+    "sporty fashion": "sporty",
 }
 
+
+# ============================================================
+# FIT NORMALIZATION
+# ============================================================
+
 FIT_LABEL_MAP = {
+
     "relaxed fit clothing": "relaxed",
     "regular fit clothing": "regular",
     "oversized clothing": "oversized",
     "fitted clothing": "fitted",
     "slim fit clothing": "slim",
+    "flowy clothing": "flowy",
+    "structured clothing": "structured",
+    "wide leg clothing": "wide_leg",
 }
+
+
+# ============================================================
+# OCCASION NORMALIZATION
+# ============================================================
 
 OCCASION_LABEL_MAP = {
-    "casual everyday clothing": "casual",
-    "college outfit": "college",
-    "office wear": "office",
-    "party outfit": "party",
-    "date night outfit": "date",
-    "wedding guest outfit": "wedding",
-    "traditional wedding outfit": "wedding",
-    "beach vacation outfit": "beach",
-    "summer casual outfit": "casual",
-    "formal event outfit": "formal",
+
+    "clothing for college": "college",
+    "clothing for office": "office",
+    "clothing for casual everyday wear": "casual",
+
+    "clothing for a date": "date",
+    "clothing for dinner": "dinner",
+
+    "clothing for a party": "party",
+    "clothing for brunch": "brunch",
+
+    "clothing for travel": "travel",
+
+    "clothing for a formal event": "formal",
+
+    "clothing for an Indian festive occasion": "festive",
+    "clothing for an Indian wedding": "wedding",
+    "clothing for a family event": "family_event",
+
+    "clothing for vacation": "vacation",
+    "clothing for the beach": "beach",
 }
 
+
+# ============================================================
+# SEASON NORMALIZATION
+# ============================================================
+
 SEASON_LABEL_MAP = {
+
     "summer clothing": "summer",
     "winter clothing": "winter",
     "spring clothing": "spring",
     "autumn clothing": "autumn",
+    "rainy season clothing": "rainy",
     "all season clothing": "all",
 }
 
 
-def normalize_label(label: str, label_map: dict) -> str:
-    # .get(..., label) is a safe fallback: if a label somehow
-    # isn't in the map, keep the original text instead of losing
-    # data silently.
-    return label_map.get(label, label)
+# ============================================================
+# LABEL LISTS
+# ============================================================
 
+CATEGORY_LABELS = list(CATEGORY_LABEL_MAP.keys())
+COLOR_LABELS = list(COLOR_LABEL_MAP.keys())
+PATTERN_LABELS = list(PATTERN_LABEL_MAP.keys())
+STYLE_LABELS = list(STYLE_LABEL_MAP.keys())
+FIT_LABELS = list(FIT_LABEL_MAP.keys())
+OCCASION_LABELS = list(OCCASION_LABEL_MAP.keys())
+SEASON_LABELS = list(SEASON_LABEL_MAP.keys())
+
+
+# ============================================================
+# NORMALIZE LABEL
+# ============================================================
+
+def normalize_label(label: str, label_map: dict) -> str:
+
+    return label_map.get(
+        label,
+        label
+    )
+
+
+# ============================================================
+# PREPARE IMAGE
+# ============================================================
+
+def prepare_image(image_path):
+
+    return preprocess(
+        Image.open(
+            image_path
+        ).convert("RGB")
+    ).unsqueeze(0)
+
+
+# ============================================================
+# GENERATE IMAGE EMBEDDING
+# ============================================================
 
 def generate_embedding(image_path):
 
-    image = preprocess(
-        Image.open(image_path).convert("RGB")
-    ).unsqueeze(0)
-
-    with torch.no_grad():
-
-        image_features = model.encode_image(image)
-
-        # Normalize the embedding
-        image_features = image_features / image_features.norm(
-            dim=-1,
-            keepdim=True
-        )
-
-    # Convert tensor to Python list
-    embedding = image_features[0].cpu().tolist()
-
-    return embedding
-
-
-# -------------------------
-# GET PREDICTIONS
-# -------------------------
-
-def get_predictions(image, labels):
-
-    # Convert labels into tokens
-    text = tokenizer(labels)
-
-    with torch.no_grad():
-
-        # Extract image features
-        image_features = model.encode_image(image)
-
-        # Extract text features
-        text_features = model.encode_text(text)
-
-        # Normalize features
-        image_features /= image_features.norm(
-            dim=-1,
-            keepdim=True
-        )
-
-        text_features /= text_features.norm(
-            dim=-1,
-            keepdim=True
-        )
-
-        # Calculate similarity
-        similarity = (
-            100.0 * image_features @ text_features.T
-        ).softmax(dim=-1)
-
-    results = list(
-        zip(labels, similarity[0].tolist())
+    image = prepare_image(
+        image_path
     )
 
-    # Sort highest confidence first
+    with torch.no_grad():
+
+        image_features = model.encode_image(
+            image
+        )
+
+        image_features = (
+            image_features
+            /
+            image_features.norm(
+                dim=-1,
+                keepdim=True
+            )
+        )
+
+    return (
+        image_features[0]
+        .cpu()
+        .tolist()
+    )
+
+
+# ============================================================
+# GET PREDICTIONS
+# ============================================================
+
+def get_predictions(
+    image,
+    labels
+):
+
+    text = tokenizer(
+        labels
+    )
+
+    with torch.no_grad():
+
+        image_features = model.encode_image(
+            image
+        )
+
+        text_features = model.encode_text(
+            text
+        )
+
+        image_features = (
+            image_features
+            /
+            image_features.norm(
+                dim=-1,
+                keepdim=True
+            )
+        )
+
+        text_features = (
+            text_features
+            /
+            text_features.norm(
+                dim=-1,
+                keepdim=True
+            )
+        )
+
+        similarity = (
+            100.0
+            *
+            image_features
+            @
+            text_features.T
+        ).softmax(
+            dim=-1
+        )
+
+    results = list(
+        zip(
+            labels,
+            similarity[0].tolist()
+        )
+    )
+
     results.sort(
         key=lambda x: x[1],
         reverse=True
@@ -180,11 +449,15 @@ def get_predictions(image, labels):
     return results
 
 
-# -------------------------
-# GET SINGLE BEST RESULT
-# -------------------------
+# ============================================================
+# GET SINGLE BEST PREDICTION
+# ============================================================
 
-def get_top_prediction(image, labels, label_map=None):
+def get_top_prediction(
+    image,
+    labels,
+    label_map=None
+):
 
     results = get_predictions(
         image,
@@ -194,17 +467,24 @@ def get_top_prediction(image, labels, label_map=None):
     label, score = results[0]
 
     if label_map is not None:
-        label = normalize_label(label, label_map)
+
+        label = normalize_label(
+            label,
+            label_map
+        )
 
     return {
         "label": label,
-        "confidence": round(score, 4)
+        "confidence": round(
+            score,
+            4
+        )
     }
 
 
-# -------------------------
-# GET TOP MULTIPLE RESULTS
-# -------------------------
+# ============================================================
+# GET MULTIPLE PREDICTIONS
+# ============================================================
 
 def get_top_predictions(
     image,
@@ -220,204 +500,133 @@ def get_top_predictions(
 
     predictions = []
 
-    for label, score in results[:top_n]:
+    # Prevent normalization aliases from creating duplicate
+    # canonical values in the final list.
+    seen_labels = set()
+
+    for label, score in results:
 
         if label_map is not None:
-            label = normalize_label(label, label_map)
+
+            normalized_label = normalize_label(
+                label,
+                label_map
+            )
+
+        else:
+
+            normalized_label = label
+
+        if normalized_label in seen_labels:
+            continue
+
+        seen_labels.add(
+            normalized_label
+        )
 
         predictions.append({
-            "label": label,
-            "confidence": round(score, 4)
+            "label": normalized_label,
+            "confidence": round(
+                score,
+                4
+            )
         })
+
+        if len(predictions) >= top_n:
+            break
 
     return predictions
 
 
-# =================================================
-# MAIN CLOTHING ANALYSIS FUNCTION
-# =================================================
+# ============================================================
+# MAIN CLOTHING ANALYSIS
+# ============================================================
 
 def analyze_clothing(image_path):
 
-    # Load and preprocess image
-    image = preprocess(
-        Image.open(image_path).convert("RGB")
-    ).unsqueeze(0)
+    image = prepare_image(image_path)
 
-    # -------------------------
-    # CATEGORY (already clean, no map needed)
-    # -------------------------
-
-    category_labels = [
-        "t-shirt",
-        "shirt",
-        "blouse",
-
-        "dress",
-        "frock",
-
-        "jeans",
-        "trousers",
-        "skirt",
-        "shorts",
-
-        "jacket",
-        "coat",
-        "hoodie",
-        "sweater",
-        "blazer",
-
-        "kurta",
-        "kurti",
-        "saree",
-
-        "shoes",
-        "sneakers",
-        "sandals",
-
-        "bag",
-        "hat"
-    ]
+    # --------------------------------------------------------
+    # CATEGORY
+    # --------------------------------------------------------
 
     category = get_top_prediction(
         image,
-        category_labels
+        CATEGORY_LABELS,
+        label_map=CATEGORY_LABEL_MAP
     )
 
-    # -------------------------
+    # --------------------------------------------------------
     # COLOR
-    # -------------------------
-
-    color_labels = [
-        "white clothing",
-        "black clothing",
-        "gray clothing",
-        "red clothing",
-        "blue clothing",
-        "green clothing",
-        "yellow clothing",
-        "orange clothing",
-        "pink clothing",
-        "purple clothing",
-        "brown clothing",
-        "beige clothing",
-        "cream clothing"
-    ]
+    # --------------------------------------------------------
 
     color = get_top_prediction(
         image,
-        color_labels,
+        COLOR_LABELS,
         label_map=COLOR_LABEL_MAP
     )
 
-    # -------------------------
+    # --------------------------------------------------------
     # PATTERN
-    # -------------------------
-
-    pattern_labels = [
-        "plain clothing",
-        "striped clothing",
-        "checked clothing",
-        "floral clothing",
-        "printed clothing",
-        "polka dot clothing",
-        "patterned clothing"
-    ]
+    # --------------------------------------------------------
 
     pattern = get_top_prediction(
         image,
-        pattern_labels,
+        PATTERN_LABELS,
         label_map=PATTERN_LABEL_MAP
     )
 
-    # -------------------------
+    # --------------------------------------------------------
     # STYLE
-    # -------------------------
-
-    style_labels = [
-        "casual clothing",
-        "formal clothing",
-        "smart casual clothing",
-        "sporty clothing",
-        "minimal clothing",
-        "elegant clothing",
-        "streetwear clothing",
-        "classic clothing",
-        "trendy clothing"
-    ]
+    # --------------------------------------------------------
 
     styles = get_top_predictions(
         image,
-        style_labels,
+        STYLE_LABELS,
         top_n=3,
         label_map=STYLE_LABEL_MAP
     )
 
-    # -------------------------
+    # --------------------------------------------------------
     # FIT
-    # -------------------------
-
-    fit_labels = [
-        "relaxed fit clothing",
-        "regular fit clothing",
-        "oversized clothing",
-        "fitted clothing",
-        "slim fit clothing"
-    ]
+    # --------------------------------------------------------
 
     fit = get_top_prediction(
         image,
-        fit_labels,
+        FIT_LABELS,
         label_map=FIT_LABEL_MAP
     )
 
-    # -------------------------
+    # --------------------------------------------------------
     # OCCASION
-    # -------------------------
-
-    occasion_labels = [
-        "casual everyday clothing",
-        "college outfit",
-        "office wear",
-        "party outfit",
-        "date night outfit",
-        "wedding guest outfit",
-        "traditional wedding outfit",
-        "beach vacation outfit",
-        "summer casual outfit",
-        "formal event outfit"
-    ]
+    # --------------------------------------------------------
 
     occasions = get_top_predictions(
         image,
-        occasion_labels,
+        OCCASION_LABELS,
         top_n=3,
         label_map=OCCASION_LABEL_MAP
     )
 
-    # -------------------------
+    # --------------------------------------------------------
     # SEASON
-    # -------------------------
-
-    season_labels = [
-        "summer clothing",
-        "winter clothing",
-        "spring clothing",
-        "autumn clothing",
-        "all season clothing"
-    ]
+    # --------------------------------------------------------
 
     season = get_top_prediction(
         image,
-        season_labels,
+        SEASON_LABELS,
         label_map=SEASON_LABEL_MAP
     )
 
+    # --------------------------------------------------------
+    # EMBEDDING
+    # --------------------------------------------------------
+
     embedding = generate_embedding(image_path)
 
-    # -------------------------
-    # RETURN FINAL RESULT
-    # -------------------------
+    # --------------------------------------------------------
+    # FINAL RESULT
+    # --------------------------------------------------------
 
     return {
         "category": category,
