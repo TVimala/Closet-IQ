@@ -94,13 +94,15 @@ def count_outfit_accessories(outfit):
 
 def get_outfit_item_ids(outfit):
 
+    # Normalize IDs because API payloads may contain string IDs
+    # while wardrobe/database objects may contain integer IDs.
     return {
-        item.get("id")
+        str(item.get("id"))
         for item in outfit.get(
             "items",
             []
         )
-        if item.get("id")
+        if item.get("id") is not None
     }
 
 
@@ -137,19 +139,51 @@ def is_same_outfit(
 
 
 # ============================================================
+# DIRECT ITEM OVERLAP
+#
+# This is intentionally separate from the broader diversity score.
+# Example: 3 shared items out of a 4-item outfit = 0.75 overlap.
+# ============================================================
+
+def calculate_item_overlap(candidate, previous_outfit):
+
+    candidate_ids = get_outfit_item_ids(candidate)
+    previous_ids = get_outfit_item_ids(previous_outfit)
+
+    if not candidate_ids or not previous_ids:
+        return 0.0
+
+    shared_ids = candidate_ids.intersection(previous_ids)
+    smaller_outfit_size = min(len(candidate_ids), len(previous_ids))
+
+    return len(shared_ids) / smaller_outfit_size
+
+
+# ============================================================
 # CHECK GENUINE DIFFERENCE
 # ============================================================
 
 def is_genuinely_different(
     candidate,
     previous_outfit,
-    similarity_threshold=0.60
+    similarity_threshold=0.60,
+    item_overlap_threshold=0.60
 ):
 
     if not previous_outfit:
-
         return True
 
+    # Hard guard against "new" outfits that only swap one piece.
+    # 3/4 shared items = 0.75, so it is rejected at a 0.60 threshold.
+    item_overlap = calculate_item_overlap(
+        candidate,
+        previous_outfit
+    )
+
+    if item_overlap >= item_overlap_threshold:
+        return False
+
+    # Keep the project's existing broader diversity calculation too.
     similarity = (
         calculate_combined_similarity(
             candidate,
@@ -157,9 +191,7 @@ def is_genuinely_different(
         )
     )
 
-    return (
-        similarity < similarity_threshold
-    )
+    return similarity < similarity_threshold
 
 
 # ============================================================
@@ -168,83 +200,63 @@ def is_genuinely_different(
 
 def filter_regeneration_candidates(
     scored_outfits,
-    previous_outfit,
-    similarity_threshold=0.60
+    previous_outfit=None,
+    previous_outfits=None,
+    similarity_threshold=0.60,
+    item_overlap_threshold=0.60
 ):
 
-    if not previous_outfit:
+    # Build one comparison history. Old requests that only send
+    # previous_outfit continue to work.
+    history = list(previous_outfits or [])
 
+    if previous_outfit:
+        previous_ids = get_outfit_item_ids(previous_outfit)
+        if not any(
+            get_outfit_item_ids(old_outfit) == previous_ids
+            for old_outfit in history
+        ):
+            history.append(previous_outfit)
+
+    if not history:
         return scored_outfits
 
     regenerated_candidates = []
-
     exact_removed = 0
     similar_removed = 0
 
     for outfit in scored_outfits:
 
-        # ----------------------------------------------------
-        # REMOVE EXACT PREVIOUS OUTFIT
-        # ----------------------------------------------------
+        rejected = False
 
-        if is_same_outfit(
-            outfit,
-            previous_outfit
-        ):
+        for old_outfit in history:
 
-            exact_removed += 1
+            if is_same_outfit(outfit, old_outfit):
+                exact_removed += 1
+                rejected = True
+                break
 
-            continue
+            if not is_genuinely_different(
+                outfit,
+                old_outfit,
+                similarity_threshold=similarity_threshold,
+                item_overlap_threshold=item_overlap_threshold
+            ):
+                similar_removed += 1
+                rejected = True
+                break
 
-        # ----------------------------------------------------
-        # REMOVE NEAR-DUPLICATE OUTFITS
-        # ----------------------------------------------------
+        if not rejected:
+            regenerated_candidates.append(outfit)
 
-        if not is_genuinely_different(
-            outfit,
-            previous_outfit,
-            similarity_threshold
-        ):
-
-            similar_removed += 1
-
-            continue
-
-        regenerated_candidates.append(
-            outfit
-        )
-
-    print(
-        "\n==================================="
-    )
-
-    print(
-        "REGENERATION FILTER"
-    )
-
-    print(
-        "==================================="
-    )
-
-    print(
-        f"Original Scored Candidates: "
-        f"{len(scored_outfits)}"
-    )
-
-    print(
-        f"Exact Previous Outfit Removed: "
-        f"{exact_removed}"
-    )
-
-    print(
-        f"Near-Duplicate Outfits Removed: "
-        f"{similar_removed}"
-    )
-
-    print(
-        f"Genuinely Different Candidates: "
-        f"{len(regenerated_candidates)}"
-    )
+    print("\n===================================")
+    print("REGENERATION FILTER")
+    print("===================================")
+    print(f"Original Scored Candidates: {len(scored_outfits)}")
+    print(f"History Outfits Checked: {len(history)}")
+    print(f"Exact Previous Outfit Removed: {exact_removed}")
+    print(f"Near-Duplicate Outfits Removed: {similar_removed}")
+    print(f"Genuinely Different Candidates: {len(regenerated_candidates)}")
 
     return regenerated_candidates
 
@@ -282,6 +294,7 @@ def run_stylist_agent(
 
     regeneration_mode = (
         data.previous_outfit is not None
+        or bool(data.previous_outfits)
     )
 
 
@@ -512,7 +525,11 @@ def run_stylist_agent(
 
                 data.previous_outfit,
 
-                similarity_threshold=0.60
+                previous_outfits=data.previous_outfits,
+
+                similarity_threshold=0.60,
+
+                item_overlap_threshold=0.60
             )
         )
 
@@ -556,6 +573,9 @@ def run_stylist_agent(
 
                 "previous_outfit":
                     data.previous_outfit,
+
+                "regeneration_history":
+                    data.previous_outfits + ([data.previous_outfit] if data.previous_outfit else []),
 
                 "outfits":
                     [],
@@ -650,6 +670,13 @@ def run_stylist_agent(
 
             "previous_outfit":
                 data.previous_outfit,
+
+            # Return the updated history so the next regenerate request
+            # can compare against every outfit already shown.
+            "regeneration_history":
+                data.previous_outfits
+                + ([data.previous_outfit] if data.previous_outfit else [])
+                + [regenerated_outfit],
 
             "total_combinations":
                 len(scored_outfits),

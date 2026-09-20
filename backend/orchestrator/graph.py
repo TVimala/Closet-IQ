@@ -258,6 +258,7 @@ def run_regeneration_request(
     latitude: float,
     longitude: float,
     previous_outfit: dict,
+    previous_outfits: list = None,
     regeneration_reason: str = None,
 ):
     _log_start(
@@ -287,6 +288,7 @@ def run_regeneration_request(
             wardrobe=_build_stylist_wardrobe(raw_wardrobe),
             preferences=_build_user_preferences(preference_context),
             previous_outfit=previous_outfit,
+            previous_outfits=previous_outfits or [],
             regeneration_reason=regeneration_reason,
         )
 

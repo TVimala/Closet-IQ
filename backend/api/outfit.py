@@ -64,6 +64,7 @@ def regenerate_outfit(
         latitude=request.latitude,
         longitude=request.longitude,
         previous_outfit=request.previous_outfit,
+        previous_outfits=request.previous_outfits,
         regeneration_reason=request.regeneration_reason,
     )
 

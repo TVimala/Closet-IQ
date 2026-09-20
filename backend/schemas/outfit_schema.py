@@ -109,6 +109,10 @@ class RegenerationRequest(BaseModel):
 
     previous_outfit: Dict[str, Any]
 
+    # All outfits already shown during this regeneration chain.
+    # Keep this optional so old clients that only send previous_outfit still work.
+    previous_outfits: List[Dict[str, Any]] = Field(default_factory=list)
+
     regeneration_reason: Optional[str] = None
 
 
@@ -175,6 +179,9 @@ class StylistInput(BaseModel):
     # ========================================================
 
     previous_outfit: Optional[Dict[str, Any]] = None
+
+    # Complete regeneration history used to prevent A -> B -> A bouncing.
+    previous_outfits: List[Dict[str, Any]] = Field(default_factory=list)
 
     regeneration_reason: Optional[str] = None
 
