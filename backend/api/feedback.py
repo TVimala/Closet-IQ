@@ -16,7 +16,7 @@ from orchestrator.graph import run_feedback_request
 from agents.feedback_agent.outfit_history import get_user_outfit_history
 from agents.feedback_agent.feedback_store import get_user_feedback_events
 from agents.feedback_agent.agent import run_feedback_agent
-
+from agents.feedback_agent.feedback_store import get_user_feedback_events
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
@@ -93,4 +93,16 @@ def get_learned_preferences(user_id: str):
         "success": True,
         "user_id": user_id,
         "learned_preferences": result.get("learned_preferences"),
+    }
+
+@router.get("/events/{user_id}")
+def get_feedback_events(user_id: str):
+
+    events = get_user_feedback_events(user_id)
+
+    return {
+        "success": True,
+        "user_id": user_id,
+        "count": len(events),
+        "events": events,
     }

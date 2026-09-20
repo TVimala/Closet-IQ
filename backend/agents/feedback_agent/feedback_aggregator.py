@@ -37,7 +37,7 @@ EVENT_SIGNAL_WEIGHTS = {
         "negative": 0
     },
 
-    "wore": {
+    "wore_it": {
         "positive": 2,
         "negative": 0
     },
@@ -244,7 +244,7 @@ def get_event_signal(
 ):
 
     event_type = normalize_text(
-        event.get("event_type")
+        event.get("feedback_type")
     )
 
     # --------------------------------------------------------

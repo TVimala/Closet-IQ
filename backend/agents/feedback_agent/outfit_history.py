@@ -1,19 +1,6 @@
 # ============================================================
 # OUTFIT HISTORY
 # STEP 12
-#
-# NOTE:
-# Originally this module stored outfit history in an in-memory
-# Python list (OUTFIT_HISTORY = []), explicitly marked as
-# temporary ("Later this will be replaced by a database.").
-#
-# It is now backed by the OutfitHistoryDB table (see
-# database/models.py) so history survives server restarts and
-# is visible to the Notification scheduler.
-#
-# All function names and signatures below are preserved exactly
-# as before so existing callers (Feedback Agent, Orchestrator)
-# do not need to change.
 # ============================================================
 
 from datetime import datetime
@@ -86,7 +73,6 @@ def create_outfit_history_record(
         date_worn = (
             datetime.now()
             .date()
-            .isoformat()
         )
 
 
@@ -134,7 +120,7 @@ def create_outfit_history_record(
             source,
 
         "created_at":
-            datetime.now().isoformat()
+            datetime.now()
     }
 
 
@@ -462,7 +448,7 @@ def log_outfit_generated(user_id, outfit_id, items, occasion=None):
     "generated" and "worn" per the project spec.
     """
 
-    today = datetime.now().date().isoformat()
+    today = datetime.now().date()
 
     db = SessionLocal()
 
