@@ -1,17 +1,3 @@
-"""Graph orchestration definitions.
-
-This is the central Orchestrator. It contains NO agent business
-logic itself - it only:
-  1. Gathers data from existing agents/services
-  2. Adapts that data into the shapes existing agents expect
-  3. Calls the existing agent functions
-  4. Passes outputs between agents
-  5. Returns a final result
-
-Every agent function called below already exists in the project
-(see the Step 0 audit). None of their internals are duplicated
-here.
-"""
 
 from datetime import date as date_type
 import logging
@@ -84,13 +70,6 @@ def _log_start(request_type, user_id, **details):
 
 # ============================================================
 # ADAPTERS
-#
-# The Wardrobe Agent's DB rows use plural field names
-# (styles/occasions/seasons) while StylistInput.WardrobeItem
-# uses singular names (style/occasion/season) and requires a
-# few fields the raw DB dict doesn't always have populated.
-# This adapter is the single place that bridges the two -
-# nothing inside either agent is changed to do this.
 # ============================================================
 
 def _to_stylist_wardrobe_item(item: dict) -> dict:

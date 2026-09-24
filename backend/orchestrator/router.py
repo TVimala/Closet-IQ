@@ -1,10 +1,3 @@
-"""Request routing for orchestrator tasks.
-
-Replaces the previous placeholder Router class. The router only
-classifies which agent(s) a request needs to go to. It performs
-NO business logic itself.
-"""
-
 from enum import Enum
 
 

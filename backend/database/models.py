@@ -418,10 +418,6 @@ class PurchaseHistory(Base):
 
 # ============================================================
 # OUTFIT HISTORY MODEL
-#
-# Replaces the previous in-memory OUTFIT_HISTORY list used by
-# agents/feedback_agent/outfit_history.py so history survives
-# restarts and is visible to the Notification scheduler.
 # ============================================================
 
 class OutfitHistoryDB(Base):
@@ -455,9 +451,6 @@ class OutfitHistoryDB(Base):
 
 # ============================================================
 # FEEDBACK RECORD MODEL
-#
-# Stores raw feedback events so learned preferences can be
-# recomputed at any time (survives restarts).
 # ============================================================
 
 class FeedbackRecordDB(Base):
@@ -518,6 +511,7 @@ class NotificationDB(Base):
     read = Column(Boolean, default=False, nullable=False)
 
     delivery_status = Column(String(30), default="delivered", nullable=False)
+    
 # ============================================================
 # PENDING PURCHASE MODEL
 # ============================================================

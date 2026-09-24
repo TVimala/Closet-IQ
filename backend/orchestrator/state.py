@@ -1,10 +1,4 @@
-"""State management for orchestrator workflows.
-
-Replaces the previous placeholder OrchestratorState dataclass.
-Only fields that existing agents/services actually need are
-included (per project instructions: do not blindly add every
-possible field).
-"""
+"""State management for orchestrator workflows."""
 
 from dataclasses import dataclass, field
 from typing import Any, Optional
