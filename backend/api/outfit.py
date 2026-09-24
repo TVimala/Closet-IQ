@@ -25,10 +25,6 @@ router = APIRouter(
 
 # ============================================================
 # SINGLE OUTFIT
-#
-# Previously built on MOCK_WARDROBE / MOCK_USER_PREFERENCES.
-# Now routed through the Orchestrator, which pulls the real
-# Wardrobe Agent + Profile Agent data for this user_id.
 # ============================================================
 
 @router.post("/generate")
@@ -76,9 +72,6 @@ def regenerate_outfit(
 
 # ============================================================
 # WEEKLY OUTFIT PLAN
-#
-# Previously built on MOCK_WARDROBE / MOCK_USER_PREFERENCES.
-# Now routed through the Orchestrator.
 # ============================================================
 
 @router.post("/weekly")

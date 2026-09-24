@@ -1,11 +1,3 @@
-"""Feedback-related routes.
-
-Previously a placeholder ("feedback service ok" health check
-only, and not even wired into main.py). Now exposes the actual
-Feedback Agent flow (validation -> persistence -> outfit
-history / wardrobe usage update -> learned preferences) through
-the Orchestrator.
-"""
 
 from fastapi import APIRouter, HTTPException
 
