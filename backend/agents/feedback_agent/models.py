@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 
 FEEDBACK_TYPES = {
     "like",
+    "dislike",
     "wore_it",
     "rating",
     "regenerate",

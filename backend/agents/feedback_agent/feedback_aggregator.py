@@ -12,18 +12,7 @@ from collections import defaultdict
 
 # ============================================================
 # SIGNAL WEIGHTS
-# ============================================================
-#
-# Different user actions have different strengths.
-#
-# Example:
-#
-# WORE + 5 STAR
-# is stronger positive feedback than LIKE.
-#
-# REGENERATE
-# is weaker negative feedback than an explicit DISLIKE.
-# ============================================================
+# ============================================================t
 
 
 EVENT_SIGNAL_WEIGHTS = {

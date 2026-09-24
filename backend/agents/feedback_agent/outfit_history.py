@@ -86,7 +86,7 @@ def create_outfit_history_record(
 
 
     # --------------------------------------------------------
-    # CREATE RECORD (in-memory representation, not yet saved)
+    # CREATE RECORD
     # --------------------------------------------------------
 
     db = SessionLocal()
