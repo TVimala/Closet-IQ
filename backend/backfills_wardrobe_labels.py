@@ -1,19 +1,3 @@
-"""
-One-off backfill script.
-
-This project has never had this script run against it yet (there
-was no backfill_wardrobe_labels.py file anywhere in the zip) - that's
-why items 54-60 still have old verbose labels like "college outfit"
-even though newly uploaded items are clean.
-
-Run this ONCE. New uploads already get normalized labels at
-analysis time (vision/clothing_analyzer.py) - this script only
-repairs existing rows that were saved before that fix existed.
-
-Usage (from the backend/ folder, same place you run uvicorn from):
-    python backfill_wardrobe_labels.py
-"""
-
 from database.connection import SessionLocal
 from database.models import WardrobeItem
 
