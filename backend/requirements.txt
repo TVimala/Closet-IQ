@@ -11,3 +11,4 @@ open-clip-torch
 torch
 pillow
 python-multipart
+google-genai

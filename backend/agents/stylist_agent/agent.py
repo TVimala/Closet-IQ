@@ -21,6 +21,9 @@ from .Scoring.color_compatibility import (
     filter_color_compatible_outfits
 )
 
+from .LLM.llm_reranker import (
+    rerank_outfits
+)
 
 # ============================================================
 # ACCESSORY CATEGORIES
@@ -759,26 +762,53 @@ def run_stylist_agent(
     # NORMAL SINGLE-OUTFIT MODE
     # ========================================================
 
-    diverse_outfits = (
+    # --------------------------------------------------------
+    # STEP 8A
+    # BUILD DIVERSE CANDIDATE POOL FOR LLM
+    # --------------------------------------------------------
+
+    llm_candidates = (
         select_diverse_outfits(
-
             scored_outfits,
-
-            limit=5,
-
+            limit=15,
             similarity_threshold=0.60
         )
     )
 
+    print(
+        f"\nLLM Candidate Pool: "
+        f"{len(llm_candidates)} diverse outfit(s)"
+    )
+
+
+    # --------------------------------------------------------
+    # STEP 8B
+    # LLM RERANKING
+    # --------------------------------------------------------
+
+    diverse_outfits = rerank_outfits(
+        candidates=llm_candidates,
+        occasion=data.occasion,
+        weather=weather,
+        preferences=data.preferences,
+        learned_preferences=learned_preferences
+    )
+
+    # diverse_outfits = llm_candidates[:3]
+
+
+
+    # --------------------------------------------------------
+    # STEP 8C
+    # DIVERSITY SUMMARY FOR FINAL LLM TOP 3
+    # --------------------------------------------------------
+
     diversity_summary = (
         calculate_diversity_summary(
-
             scored_outfits,
-
             diverse_outfits
         )
     )
-
 
     # ========================================================
     # DISPLAY TOP OUTFITS
@@ -886,8 +916,21 @@ def run_stylist_agent(
             f"{outfit['final_score']}/100"
         )
 
+        if outfit.get("llm_score") is not None:
+            print(
+                f"LLM Score: "
+                f"{outfit['llm_score']}/100"
+            )
 
-    if len(diverse_outfits) < 5:
+        if outfit.get("llm_reason"):
+
+            print(
+                f"LLM Reason: "
+                f"{outfit['llm_reason']}"
+            )
+
+
+    if len(diverse_outfits) < 3:
 
         print(
             "\nNote: Only "
